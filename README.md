@@ -14,10 +14,29 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-For one-off requests:
+```ruby
+require 'folio_client'
+
+# this will configure the client and request an access token
+client = FolioClient.configure(
+    url: 'https://okapi-dev.stanford.edu',
+    login_params: { username: 'xxx', password: 'yyy' },
+    okapi_headers: { 'X-Okapi-Tenant': 'sul', 'User-Agent': 'FolioApiClient' }
+)
+
+response = client.get('/organizations/organizations')
+```
+
+Note that the settings will live in the consumer of this gem and would typically be used like this:
 
 ```ruby
 require 'folio_client'
+
+client = FolioClient.configure(
+    url: Settings.okapi.url,
+    login_params: Settings.okapi.login_params,
+    okapi_headers: Settings.okapi.headers
+)
 ```
 
 ## Development
