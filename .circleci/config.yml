@@ -1,13 +1,16 @@
 version: 2.1
-jobs:
+orbs:
+  ruby-rails: sul-dlss/ruby-rails@3.1.2
+workflows:
   build:
-    docker:
-      - image: ruby:3.1.0
-    steps:
-      - checkout
-      - run:
-          name: Run the default task
-          command: |
-            gem install bundler -v 2.4.5
-            bundle install
-            bundle exec rake
+    jobs:
+      - ruby-rails/lint:
+          name: lint
+          executor:
+            name: ruby-rails/ruby
+            ruby-tag: '3.1.2'
+      - ruby-rails/test-gem:
+          name: test
+          executor:
+            name: ruby-rails/ruby
+            ruby-tag: '3.1.2'

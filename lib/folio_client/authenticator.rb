@@ -16,6 +16,8 @@ class FolioClient
     def token
       response = connection.post("/authn/login", login_params.to_json)
 
+      UnexpectedResponse.call(response) unless response.success?
+
       JSON.parse(response.body)["okapiToken"]
     end
 

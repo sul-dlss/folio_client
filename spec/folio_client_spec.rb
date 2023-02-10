@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe FolioClient do
   subject(:client) do
     described_class.configure(**args)
@@ -71,4 +70,3 @@ RSpec.describe FolioClient do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

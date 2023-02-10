@@ -41,6 +41,8 @@ class FolioClient
   def get(path, params = {})
     response = connection.get(path, params, { "x-okapi-token": config.token })
 
+    UnexpectedResponse.call(response) unless response.success?
+
     JSON.parse(response.body)
   end
 
@@ -49,6 +51,8 @@ class FolioClient
   # @param request [json] request body to post to the API
   def post(path, request = nil)
     response = connection.post(path, request, { "x-okapi-token": config.token })
+
+    UnexpectedResponse.call(response) unless response.success?
 
     JSON.parse(response.body)
   end

@@ -1,3 +1,8 @@
+[![Gem Version](https://badge.fury.io/rb/folio_client.svg)](https://badge.fury.io/rb/folio_client)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/sul-dlss/folio_client/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/sul-dlss/folio_client/tree/main)
+[![Code Climate](https://api.codeclimate.com/v1/badges/34dd73ba47058709c666/maintainability)](https://codeclimate.com/github/sul-dlss/folio_client/maintainability)
+[![Code Climate Test Coverage](https://api.codeclimate.com/v1/badges/34dd73ba47058709c666/test_coverage)](https://codeclimate.com/github/sul-dlss/folio_client/test_coverage)
+
 # FolioClient
 
 FolioClient is a Ruby gem that acts as a client to the RESTful HTTP APIs provided by the Folio ILS API.
