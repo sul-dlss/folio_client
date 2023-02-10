@@ -1,14 +1,15 @@
-AllCops:
-  TargetRubyVersion: 2.6
-  SuggestExtensions: false
+inherit_mode:
+  merge:
+    - Exclude
 
-Style/StringLiterals:
-  Enabled: true
-  EnforcedStyle: double_quotes
+require:
+  - rubocop-performance
+  - rubocop-rspec
+  - standard
 
-Style/StringLiteralsInInterpolation:
-  Enabled: true
-  EnforcedStyle: double_quotes
+inherit_gem:
+  standard: config/base.yml
 
-Layout/LineLength:
-  Max: 120
+inherit_from:
+  - .rubocop/custom.yml
+  - .rubocop_todo.yml
