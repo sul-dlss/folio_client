@@ -1,13 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::Authenticator do
-  let(:args) do
-    {
-      url:,
-      login_params:,
-      okapi_headers:
-    }
-  end
+  let(:args) { { url:, login_params:, okapi_headers: } }
   let(:url) { "https://folio.example.org" }
   let(:login_params) { { username: "username", password: "password" } }
   let(:okapi_headers) { { some_bogus_headers: "here" } }

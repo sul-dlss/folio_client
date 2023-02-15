@@ -69,4 +69,17 @@ RSpec.describe FolioClient do
       expect(client.post(path, { id: 5 })).to eq(response)
     end
   end
+
+  describe ".fetch_hrid" do
+    let(:barcode) { "123456" }
+
+    before do
+      allow(described_class.instance).to receive(:fetch_hrid).with(barcode:)
+    end
+
+    it "invokes instance#fetch_hrid" do
+      client.fetch_hrid(barcode:)
+      expect(client.instance).to have_received(:fetch_hrid).with(barcode:)
+    end
+  end
 end

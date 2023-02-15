@@ -31,6 +31,7 @@ class FolioClient
     end
 
     delegate :config, :connection, :get, :post, to: :instance
+    delegate :fetch_hrid, to: :instance
   end
 
   attr_accessor :config
@@ -63,5 +64,10 @@ class FolioClient
       url: config.url,
       headers: DEFAULT_HEADERS.merge(config.okapi_headers || {})
     )
+  end
+
+  def fetch_hrid(...)
+    inventory = Inventory.new(self)
+    inventory.fetch_hrid(...)
   end
 end
