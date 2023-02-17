@@ -66,8 +66,12 @@ class FolioClient
     )
   end
 
+  # Public methods available on the FolioClient below
+  # Wrap methods in `TokenWrapper` to ensure a new token is fetched automatically if expired
   def fetch_hrid(...)
-    inventory = Inventory.new(self)
-    inventory.fetch_hrid(...)
+    TokenWrapper.refresh(config, connection) do
+      inventory = Inventory.new(self)
+      inventory.fetch_hrid(...)
+    end
   end
 end
