@@ -82,4 +82,29 @@ RSpec.describe FolioClient do
       expect(client.instance).to have_received(:fetch_hrid).with(barcode:)
     end
   end
+
+  # Tests the TokenWrapper that requests a new token, with a method that might first encounter the error
+  context "when token is expired" do
+    let(:inventory) { instance_double(FolioClient::Inventory, fetch_hrid: nil) }
+    let(:hrid) { "in56789" }
+    let(:expired_token) { "expired_token" }
+    let(:new_token) { "new_token" }
+
+    before do
+      allow(FolioClient::Inventory).to receive(:new).and_return(inventory)
+      allow(FolioClient::Authenticator).to receive(:token).and_return(expired_token, new_token)
+      response_values = [:raise, hrid]
+      allow(inventory).to receive(:fetch_hrid).twice do
+        v = response_values.shift
+        (v == :raise) ? raise(FolioClient::UnexpectedResponse::UnauthorizedError) : v
+      end
+    end
+
+    it "fetches new token and retries" do
+      expect { client.fetch_hrid(barcode: "1234") }
+        .to change(client.config, :token)
+        .from(expired_token)
+        .to(new_token)
+    end
+  end
 end

@@ -18,6 +18,8 @@ class FolioClient
     # @param [Faraday::Response] response
     def self.call(response)
       case response.status
+      when 401
+        raise UnauthorizedError, "There was a problem with the access token: #{response.body}"
       when 403
         raise ForbiddenError, "The operation requires privileges which the client does not have: #{response.body}"
       when 404
