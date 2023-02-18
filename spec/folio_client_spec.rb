@@ -101,9 +101,10 @@ RSpec.describe FolioClient do
     end
 
     it "fetches new token and retries" do
-      expect(client.config.token).to eq expired_token
-      expect(client.fetch_hrid(barcode: "1234")).to eq hrid
-      expect(client.config.token).to eq new_token
+      expect { client.fetch_hrid(barcode: "1234") }
+        .to change(client.config, :token)
+        .from(expired_token)
+        .to(new_token)
     end
   end
 end
