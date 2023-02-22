@@ -31,7 +31,7 @@ class FolioClient
     end
 
     delegate :config, :connection, :get, :post, to: :instance
-    delegate :fetch_hrid, :fetch_marc_hash, to: :instance
+    delegate :fetch_hrid, :fetch_marc_hash, :instance_status?, to: :instance
   end
 
   attr_accessor :config
@@ -40,7 +40,7 @@ class FolioClient
   # @param path [String] the path to the Folio API request
   # @param request [Hash] params to get to the API
   def get(path, params = {})
-    response = connection.get(path, params, { "x-okapi-token": config.token })
+    response = connection.get(path, params, {"x-okapi-token": config.token})
 
     UnexpectedResponse.call(response) unless response.success?
 
@@ -51,7 +51,7 @@ class FolioClient
   # @param path [String] the path to the Folio API request
   # @param request [json] request body to post to the API
   def post(path, request = nil)
-    response = connection.post(path, request, { "x-okapi-token": config.token })
+    response = connection.post(path, request, {"x-okapi-token": config.token})
 
     UnexpectedResponse.call(response) unless response.success?
 
@@ -79,6 +79,13 @@ class FolioClient
     TokenWrapper.refresh(config, connection) do
       source_storage = SourceStorage.new(self)
       source_storage.fetch_marc_hash(...)
+    end
+  end
+
+  def instance_status?(...)
+    TokenWrapper.refresh(config, connection) do
+      inventory = Inventory.new(self)
+      inventory.instance_status?(...)
     end
   end
 end
