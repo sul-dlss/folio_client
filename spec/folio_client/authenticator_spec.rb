@@ -49,7 +49,7 @@ RSpec.describe FolioClient::Authenticator do
       subject(:authenticator) { described_class.new(login_params, connection) }
 
       it "raises the correct exception" do
-        expect { authenticator.token }.to raise_error(FolioClient::UnexpectedResponse::UnauthorizedError)
+        expect { authenticator.token }.to raise_error(FolioClient::UnauthorizedError)
       end
     end
   end

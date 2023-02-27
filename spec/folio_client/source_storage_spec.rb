@@ -122,7 +122,7 @@ RSpec.describe FolioClient::SourceStorage do
     }
 
     it "raises a NotFound exception" do
-      expect { source_storage.fetch_marc_hash(instance_hrid:) }.to raise_error(FolioClient::UnexpectedResponse::ResourceNotFound, "No records found for #{instance_hrid}")
+      expect { source_storage.fetch_marc_hash(instance_hrid:) }.to raise_error(FolioClient::ResourceNotFound, "No records found for #{instance_hrid}")
     end
   end
 
@@ -200,7 +200,7 @@ RSpec.describe FolioClient::SourceStorage do
     }
 
     it "raises a MultipleRecordsForIdentifier exception" do
-      expect { source_storage.fetch_marc_hash(instance_hrid:) }.to raise_error(FolioClient::UnexpectedResponse::MultipleResourcesFound, "Expected 1 record for #{instance_hrid}, but found 2")
+      expect { source_storage.fetch_marc_hash(instance_hrid:) }.to raise_error(FolioClient::MultipleResourcesFound, "Expected 1 record for #{instance_hrid}, but found 2")
     end
   end
 end

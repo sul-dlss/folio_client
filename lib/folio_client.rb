@@ -13,6 +13,24 @@ Zeitwerk::Loader.for_gem.setup
 class FolioClient
   include Singleton
 
+  # Base class for all FolioClient errors
+  class Error < StandardError; end
+
+  # Error raised by the Folio Auth API returns a 422 Unauthorized
+  class UnauthorizedError < Error; end
+
+  # Error raised when the Folio API returns a 404 NotFound, or returns 0 results when one was expected
+  class ResourceNotFound < Error; end
+
+  # Error raised when e.g. exactly one result was expected, but more than one was returned
+  class MultipleResourcesFound < Error; end
+
+  # Error raised when the Folio API returns a 403 Forbidden
+  class ForbiddenError < Error; end
+
+  # Error raised when the Folio API returns a 500
+  class ServiceUnavailable < Error; end
+
   DEFAULT_HEADERS = {
     accept: "application/json, text/plain",
     content_type: "application/json"

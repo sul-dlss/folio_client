@@ -5,7 +5,7 @@ class FolioClient
   class TokenWrapper
     def self.refresh(config, connection)
       yield
-    rescue UnexpectedResponse::UnauthorizedError
+    rescue UnauthorizedError
       config.token = Authenticator.token(config.login_params, connection)
       yield
     end
