@@ -19,6 +19,8 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
+The gem should be configured first, and then you can either call API endpoints directly using GET or POST, or more commonly, use the helper methods provded, as described in the section below.
+
 ```ruby
 require 'folio_client'
 
@@ -29,7 +31,9 @@ client = FolioClient.configure(
     okapi_headers: { 'X-Okapi-Tenant': 'sul', 'User-Agent': 'FolioApiClient' }
 )
 
-response = client.get('/organizations/organizations')
+response = client.get('/organizations/organizations', {query_string_param: 'abcdef'})
+
+response = client.post('/some/post/endpoint', params_hash.to_json)
 ```
 
 Note that the settings will live in the consumer of this gem and would typically be used like this:
@@ -42,6 +46,30 @@ client = FolioClient.configure(
     login_params: Settings.okapi.login_params,
     okapi_headers: Settings.okapi.headers
 )
+```
+
+The client is smart enough to automatically request a new token if it detects the one it is using has expired.  If for some reason, you want to immediately request a new token, you can do this:
+
+```ruby
+client.config.token = FolioClient::Authenticator.token(client.config.login_params, client.connection)
+```
+
+## API Coverage
+
+FolioClient provides a number of methods to simplify connecting to the RESTful HTTP API of the Folio API. In this section we list all of the available methods, reflecting how much of the API the client covers.  Note that this assumes the client has already been configured, as described above.  See dor-services-app for an example of configuration and usage.
+
+```ruby
+# Lookup an instance hrid given a barcode
+# returns a string if found, nil if nothing found
+client.fetch_hrid(barcode: "12345")
+ => "a7927874"
+
+# Request a MARC record given an instance hrid
+# returns a hash if found; raises FolioClient::UnexpectedResponse::ResourceNotFound if instance_hrid not found
+client.fetch_marc_hash(instance_hrid: "a7927874")
+ => {"fields"=>
+  [{"003"=>"FOLIO"}....]
+  }
 ```
 
 ## Development
