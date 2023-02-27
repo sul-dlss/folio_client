@@ -13,8 +13,8 @@ RSpec.describe FolioClient do
     }
   end
   let(:url) { "https://folio.example.org" }
-  let(:login_params) { { username: "username", password: "password" } }
-  let(:okapi_headers) { { some_bogus_headers: "here" } }
+  let(:login_params) { {username: "username", password: "password"} }
+  let(:okapi_headers) { {some_bogus_headers: "here"} }
   let(:token) { "a_long_silly_token" }
 
   before do
@@ -44,7 +44,7 @@ RSpec.describe FolioClient do
 
   describe "#get" do
     let(:path) { "some_path" }
-    let(:response) { { some: "response" }.to_json }
+    let(:response) { {some: "response"}.to_json }
 
     before do
       stub_request(:get, "#{url}/#{path}?id=5")
@@ -52,13 +52,13 @@ RSpec.describe FolioClient do
     end
 
     it "calls the API with a get" do
-      expect(client.get(path, { id: 5 })).to eq(response)
+      expect(client.get(path, {id: 5})).to eq(response)
     end
   end
 
   describe "#post" do
     let(:path) { "some_path" }
-    let(:response) { { some: "response" }.to_json }
+    let(:response) { {some: "response"}.to_json }
 
     before do
       stub_request(:post, "#{url}/#{path}")
@@ -66,7 +66,7 @@ RSpec.describe FolioClient do
     end
 
     it "calls the API with a post" do
-      expect(client.post(path, { id: 5 })).to eq(response)
+      expect(client.post(path, {id: 5})).to eq(response)
     end
   end
 
@@ -80,6 +80,36 @@ RSpec.describe FolioClient do
     it "invokes instance#fetch_hrid" do
       client.fetch_hrid(barcode:)
       expect(client.instance).to have_received(:fetch_hrid).with(barcode:)
+    end
+  end
+
+  describe ".has_instance_status?" do
+    let(:hrid) { "a12854819" }
+    let(:status_id) { "1a2b3c4d-1234" }
+
+    before do
+      allow(described_class.instance).to receive(:has_instance_status?).with(hrid:, status_id:)
+    end
+
+    it "invokes instance#has_instance_status?" do
+      client.has_instance_status?(hrid:, status_id:)
+      expect(client.instance).to have_received(:has_instance_status?).with(hrid:, status_id:)
+    end
+  end
+
+  describe "#has_instance_status?" do
+    let(:hrid) { "a12854819" }
+    let(:status_id) { "1a2b3c4d-1234" }
+    let(:inventory) { instance_double(described_class::Inventory) }
+
+    before do
+      allow(described_class::Inventory).to receive(:new).and_return(inventory)
+      allow(inventory).to receive(:has_instance_status?)
+    end
+
+    it "invokes Inventory#has_instance_status?" do
+      client.public_send(:has_instance_status?, hrid:, status_id:)
+      expect(inventory).to have_received(:has_instance_status?).once
     end
   end
 
