@@ -3,20 +3,23 @@
 class FolioClient
   # Handles unexpected responses when communicating with Folio
   class UnexpectedResponse
+    # Base class for all FolioClient errors
+    class FolioClientError < StandardError; end
+
     # Error raised by the Folio Auth API returns a 422 Unauthorized
-    class UnauthorizedError < StandardError; end
+    class UnauthorizedError < FolioClientError; end
 
     # Error raised when the Folio API returns a 404 NotFound, or returns 0 results when one was expected
-    class ResourceNotFound < StandardError; end
+    class ResourceNotFound < FolioClientError; end
 
     # Error raised when e.g. exactly one result was expected, but more than one was returned
-    class MultipleResourcesFound < StandardError; end
+    class MultipleResourcesFound < FolioClientError; end
 
     # Error raised when the Folio API returns a 403 Forbidden
-    class ForbiddenError < StandardError; end
+    class ForbiddenError < FolioClientError; end
 
     # Error raised when the Folio API returns a 500
-    class ServiceUnavailable < StandardError; end
+    class ServiceUnavailable < FolioClientError; end
 
     # @param [Faraday::Response] response
     def self.call(response)
