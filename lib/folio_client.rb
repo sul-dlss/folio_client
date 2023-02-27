@@ -31,7 +31,7 @@ class FolioClient
     end
 
     delegate :config, :connection, :get, :post, to: :instance
-    delegate :fetch_hrid, :fetch_marc_hash, :instance_status?, to: :instance
+    delegate :fetch_hrid, :fetch_marc_hash, :has_instance_status?, to: :instance
   end
 
   attr_accessor :config
@@ -82,10 +82,10 @@ class FolioClient
     end
   end
 
-  def instance_status?(...)
+  def has_instance_status?(...)
     TokenWrapper.refresh(config, connection) do
       inventory = Inventory.new(self)
-      inventory.instance_status?(...)
+      inventory.has_instance_status?(...)
     end
   end
 end

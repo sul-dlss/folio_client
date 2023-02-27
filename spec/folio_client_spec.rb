@@ -83,33 +83,33 @@ RSpec.describe FolioClient do
     end
   end
 
-  describe ".instance_status?" do
+  describe ".has_instance_status?" do
     let(:hrid) { "a12854819" }
     let(:status_id) { "1a2b3c4d-1234" }
 
     before do
-      allow(described_class.instance).to receive(:instance_status?).with(hrid:, status_id:)
+      allow(described_class.instance).to receive(:has_instance_status?).with(hrid:, status_id:)
     end
 
-    it "invokes instance#instance_status?" do
-      client.instance_status?(hrid:, status_id:)
-      expect(client.instance).to have_received(:instance_status?).with(hrid:, status_id:)
+    it "invokes instance#has_instance_status?" do
+      client.has_instance_status?(hrid:, status_id:)
+      expect(client.instance).to have_received(:has_instance_status?).with(hrid:, status_id:)
     end
   end
 
-  describe "#instance_status?" do
+  describe "#has_instance_status?" do
     let(:hrid) { "a12854819" }
     let(:status_id) { "1a2b3c4d-1234" }
     let(:inventory) { instance_double(described_class::Inventory) }
 
     before do
       allow(described_class::Inventory).to receive(:new).and_return(inventory)
-      allow(inventory).to receive(:instance_status?)
+      allow(inventory).to receive(:has_instance_status?)
     end
 
-    it "invokes Inventory#instance_status?" do
-      client.public_send(:instance_status?, hrid:, status_id:)
-      expect(inventory).to have_received(:instance_status?).once
+    it "invokes Inventory#has_instance_status?" do
+      client.public_send(:has_instance_status?, hrid:, status_id:)
+      expect(inventory).to have_received(:has_instance_status?).once
     end
   end
 

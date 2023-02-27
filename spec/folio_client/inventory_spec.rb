@@ -122,7 +122,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "returns true" do
-        expect(inventory.instance_status?(hrid:, status_id:)).to be true
+        expect(inventory.has_instance_status?(hrid:, status_id:)).to be true
       end
     end
 
@@ -148,7 +148,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "returns false" do
-        expect(inventory.instance_status?(hrid:, status_id:)).to be false
+        expect(inventory.has_instance_status?(hrid:, status_id:)).to be false
       end
     end
 
@@ -172,7 +172,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "returns false" do
-        expect(inventory.instance_status?(hrid:, status_id:)).to be false
+        expect(inventory.has_instance_status?(hrid:, status_id:)).to be false
       end
     end
 
@@ -183,7 +183,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "raises an error" do
-        expect { inventory.instance_status?(hrid:, status_id:) }.to raise_error(FolioClient::UnexpectedResponse::ResourceNotFound, "No matching instance found for #{hrid}")
+        expect { inventory.has_instance_status?(hrid:, status_id:) }.to raise_error(FolioClient::UnexpectedResponse::ResourceNotFound, "No matching instance found for #{hrid}")
       end
     end
   end

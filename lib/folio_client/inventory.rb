@@ -25,9 +25,9 @@ class FolioClient
     end
 
     # @param hrid [String] folio instance HRID
-    # @param status_id [String] id for an instance status code
+    # @param status_id [String] uuid for an instance status code
     # @raise [FolioClient::UnexpectedResponse::ResourceNotFound] if search by hrid returns 0 results
-    def instance_status?(hrid:, status_id:)
+    def has_instance_status?(hrid:, status_id:)
       # get the instance record and its statusId
       instance = client.get("/inventory/instances", {query: "hrid==#{hrid}"})
       raise FolioClient::UnexpectedResponse::ResourceNotFound, "No matching instance found for #{hrid}" if instance["totalRecords"] == 0
