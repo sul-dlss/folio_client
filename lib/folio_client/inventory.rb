@@ -11,6 +11,7 @@ class FolioClient
     end
 
     # @param barcode [String] barcode to search by to fetch the HRID
+    # @return [String,nil] HRID if present, otherwise nil.
     def fetch_hrid(barcode:)
       # find the instance UUID for this barcode
       instance = client.get("/search/instances", {query: "items.barcode==#{barcode}"})
