@@ -183,7 +183,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "raises an error" do
-        expect { inventory.has_instance_status?(hrid:, status_id:) }.to raise_error(FolioClient::UnexpectedResponse::ResourceNotFound, "No matching instance found for #{hrid}")
+        expect { inventory.has_instance_status?(hrid:, status_id:) }.to raise_error(FolioClient::ResourceNotFound, "No matching instance found for #{hrid}")
       end
     end
   end

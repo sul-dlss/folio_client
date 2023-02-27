@@ -17,8 +17,8 @@ class FolioClient
       response_hash = client.get("/source-storage/source-records", {instanceHrid: instance_hrid})
 
       record_count = response_hash["totalRecords"]
-      raise FolioClient::UnexpectedResponse::ResourceNotFound, "No records found for #{instance_hrid}" if record_count.zero?
-      raise FolioClient::UnexpectedResponse::MultipleResourcesFound, "Expected 1 record for #{instance_hrid}, but found #{record_count}" if record_count > 1
+      raise ResourceNotFound, "No records found for #{instance_hrid}" if record_count.zero?
+      raise MultipleResourcesFound, "Expected 1 record for #{instance_hrid}, but found #{record_count}" if record_count > 1
 
       response_hash["sourceRecords"].first["parsedRecord"]["content"]
     end

@@ -126,7 +126,7 @@ RSpec.describe FolioClient do
       response_values = [:raise, hrid]
       allow(inventory).to receive(:fetch_hrid).twice do
         v = response_values.shift
-        (v == :raise) ? raise(FolioClient::UnexpectedResponse::UnauthorizedError) : v
+        (v == :raise) ? raise(FolioClient::UnauthorizedError) : v
       end
     end
 
