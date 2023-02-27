@@ -19,7 +19,7 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-The gem should be configured first, and then you can either call API endpoints directly using GET or POST, or more commonly, use the helper methods provded, as described in the section below.
+The gem should be configured first, and then you can either call API endpoints directly using GET or POST, or more commonly, use the helper methods provided, as described in the section below.
 
 ```ruby
 require 'folio_client'
