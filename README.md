@@ -5,7 +5,7 @@
 
 # FolioClient
 
-FolioClient is a Ruby gem that acts as a client to the RESTful HTTP APIs provided by the Folio ILS API.
+FolioClient is a Ruby gem that acts as a client to the RESTful HTTP APIs provided by the Folio ILS API.  It requires ruby 3.0 or better.
 
 ## Installation
 

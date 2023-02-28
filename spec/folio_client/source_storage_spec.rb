@@ -3,7 +3,7 @@
 RSpec.describe FolioClient::SourceStorage do
   subject(:source_storage) { described_class.new(client) }
 
-  let(:args) { {url:, login_params:, okapi_headers:} }
+  let(:args) { {url: url, login_params: login_params, okapi_headers: okapi_headers} }
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
@@ -109,7 +109,7 @@ RSpec.describe FolioClient::SourceStorage do
     }
 
     it "returns the parsed JSON as a hash for the one record that was found" do
-      result = source_storage.fetch_marc_hash(instance_hrid:)
+      result = source_storage.fetch_marc_hash(instance_hrid: instance_hrid)
       expect(result["fields"].select { |field_hash| field_hash.key?("001") }.map(&:values)).to eq([["a666"]])
       expect(result["fields"].select { |field_hash| field_hash.key?("008") }.map(&:values)).to eq([["750409s1961||||enk           ||| | eng  "]])
       expect(result["fields"].select { |field_hash| field_hash.key?("050") }.map(&:values)).to eq([[{"ind1" => " ", "ind2" => " ", "subfields" => [{"a" => "M231.B66 Bb maj. 1961"}]}]])
@@ -122,7 +122,7 @@ RSpec.describe FolioClient::SourceStorage do
     }
 
     it "raises a NotFound exception" do
-      expect { source_storage.fetch_marc_hash(instance_hrid:) }.to raise_error(FolioClient::ResourceNotFound, "No records found for #{instance_hrid}")
+      expect { source_storage.fetch_marc_hash(instance_hrid: instance_hrid) }.to raise_error(FolioClient::ResourceNotFound, "No records found for #{instance_hrid}")
     end
   end
 
@@ -200,7 +200,7 @@ RSpec.describe FolioClient::SourceStorage do
     }
 
     it "raises a MultipleRecordsForIdentifier exception" do
-      expect { source_storage.fetch_marc_hash(instance_hrid:) }.to raise_error(FolioClient::MultipleResourcesFound, "Expected 1 record for #{instance_hrid}, but found 2")
+      expect { source_storage.fetch_marc_hash(instance_hrid: instance_hrid) }.to raise_error(FolioClient::MultipleResourcesFound, "Expected 1 record for #{instance_hrid}, but found 2")
     end
   end
 end

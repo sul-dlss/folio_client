@@ -5,7 +5,7 @@ RSpec.describe FolioClient::Inventory do
     described_class.new(client)
   end
 
-  let(:args) { {url:, login_params:, okapi_headers:} }
+  let(:args) { {url: url, login_params: login_params, okapi_headers: okapi_headers} }
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
@@ -57,7 +57,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "returns the instance hrid" do
-        expect(inventory.fetch_hrid(barcode:)).to eq(hrid)
+        expect(inventory.fetch_hrid(barcode: barcode)).to eq(hrid)
       end
     end
 
@@ -69,7 +69,7 @@ RSpec.describe FolioClient::Inventory do
       let(:inventory_instance_response) {}
 
       it "returns nil" do
-        expect(inventory.fetch_hrid(barcode:)).to be_nil
+        expect(inventory.fetch_hrid(barcode: barcode)).to be_nil
       end
     end
 
@@ -87,7 +87,7 @@ RSpec.describe FolioClient::Inventory do
       let(:inventory_instance_response) { {} }
 
       it "returns nil" do
-        expect(inventory.fetch_hrid(barcode:)).to be_nil
+        expect(inventory.fetch_hrid(barcode: barcode)).to be_nil
       end
     end
   end
@@ -122,7 +122,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "returns true" do
-        expect(inventory.has_instance_status?(hrid:, status_id:)).to be true
+        expect(inventory.has_instance_status?(hrid: hrid, status_id: status_id)).to be true
       end
     end
 
@@ -148,7 +148,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "returns false" do
-        expect(inventory.has_instance_status?(hrid:, status_id:)).to be false
+        expect(inventory.has_instance_status?(hrid: hrid, status_id: status_id)).to be false
       end
     end
 
@@ -172,7 +172,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "returns false" do
-        expect(inventory.has_instance_status?(hrid:, status_id:)).to be false
+        expect(inventory.has_instance_status?(hrid: hrid, status_id: status_id)).to be false
       end
     end
 
@@ -183,7 +183,7 @@ RSpec.describe FolioClient::Inventory do
       }
 
       it "raises an error" do
-        expect { inventory.has_instance_status?(hrid:, status_id:) }.to raise_error(FolioClient::ResourceNotFound, "No matching instance found for #{hrid}")
+        expect { inventory.has_instance_status?(hrid: hrid, status_id: status_id) }.to raise_error(FolioClient::ResourceNotFound, "No matching instance found for #{hrid}")
       end
     end
   end
