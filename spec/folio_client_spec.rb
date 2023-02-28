@@ -5,13 +5,7 @@ RSpec.describe FolioClient do
     described_class.configure(**args)
   end
 
-  let(:args) do
-    {
-      url:,
-      login_params:,
-      okapi_headers:
-    }
-  end
+  let(:args) { {url: url, login_params: login_params, okapi_headers: okapi_headers} }
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
@@ -74,12 +68,12 @@ RSpec.describe FolioClient do
     let(:barcode) { "123456" }
 
     before do
-      allow(described_class.instance).to receive(:fetch_hrid).with(barcode:)
+      allow(described_class.instance).to receive(:fetch_hrid).with(barcode: barcode)
     end
 
     it "invokes instance#fetch_hrid" do
-      client.fetch_hrid(barcode:)
-      expect(client.instance).to have_received(:fetch_hrid).with(barcode:)
+      client.fetch_hrid(barcode: barcode)
+      expect(client.instance).to have_received(:fetch_hrid).with(barcode: barcode)
     end
   end
 
@@ -88,12 +82,12 @@ RSpec.describe FolioClient do
     let(:status_id) { "1a2b3c4d-1234" }
 
     before do
-      allow(described_class.instance).to receive(:has_instance_status?).with(hrid:, status_id:)
+      allow(described_class.instance).to receive(:has_instance_status?).with(hrid: hrid, status_id: status_id)
     end
 
     it "invokes instance#has_instance_status?" do
-      client.has_instance_status?(hrid:, status_id:)
-      expect(client.instance).to have_received(:has_instance_status?).with(hrid:, status_id:)
+      client.has_instance_status?(hrid: hrid, status_id: status_id)
+      expect(client.instance).to have_received(:has_instance_status?).with(hrid: hrid, status_id: status_id)
     end
   end
 
@@ -108,7 +102,7 @@ RSpec.describe FolioClient do
     end
 
     it "invokes Inventory#has_instance_status?" do
-      client.public_send(:has_instance_status?, hrid:, status_id:)
+      client.public_send(:has_instance_status?, hrid: hrid, status_id: status_id)
       expect(inventory).to have_received(:has_instance_status?).once
     end
   end

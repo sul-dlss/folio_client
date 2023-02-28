@@ -41,7 +41,7 @@ class FolioClient
     # @param login_params [Hash] the folio client login params (username:, password:)
     # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
     def configure(url:, login_params:, okapi_headers:)
-      instance.config = OpenStruct.new(url:, login_params:, okapi_headers:, token: nil)
+      instance.config = OpenStruct.new(url: url, login_params: login_params, okapi_headers: okapi_headers, token: nil)
 
       instance.config.token = Authenticator.token(login_params, connection)
 
