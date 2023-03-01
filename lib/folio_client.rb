@@ -58,7 +58,9 @@ class FolioClient
   # @param path [String] the path to the Folio API request
   # @param request [Hash] params to get to the API
   def get(path, params = {})
-    response = connection.get(path, params, {"x-okapi-token": config.token})
+    response = TokenWrapper.refresh(config, connection) do
+      connection.get(path, params, {"x-okapi-token": config.token})
+    end
 
     UnexpectedResponse.call(response) unless response.success?
 
@@ -69,7 +71,9 @@ class FolioClient
   # @param path [String] the path to the Folio API request
   # @param request [json] request body to post to the API
   def post(path, request = nil)
-    response = connection.post(path, request, {"x-okapi-token": config.token})
+    response = TokenWrapper.refresh(config, connection) do
+      connection.post(path, request, {"x-okapi-token": config.token})
+    end
 
     UnexpectedResponse.call(response) unless response.success?
 
@@ -85,25 +89,18 @@ class FolioClient
   end
 
   # Public methods available on the FolioClient below
-  # Wrap methods in `TokenWrapper` to ensure a new token is fetched automatically if expired
   def fetch_hrid(...)
-    TokenWrapper.refresh(config, connection) do
-      inventory = Inventory.new(self)
-      inventory.fetch_hrid(...)
-    end
+    inventory = Inventory.new(self)
+    inventory.fetch_hrid(...)
   end
 
   def fetch_marc_hash(...)
-    TokenWrapper.refresh(config, connection) do
-      source_storage = SourceStorage.new(self)
-      source_storage.fetch_marc_hash(...)
-    end
+    source_storage = SourceStorage.new(self)
+    source_storage.fetch_marc_hash(...)
   end
 
   def has_instance_status?(...)
-    TokenWrapper.refresh(config, connection) do
-      inventory = Inventory.new(self)
-      inventory.has_instance_status?(...)
-    end
+    inventory = Inventory.new(self)
+    inventory.has_instance_status?(...)
   end
 end
