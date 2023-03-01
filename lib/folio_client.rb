@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "active_support/core_ext/module/delegation"
+require "active_support/core_ext/object/blank"
 require "faraday"
 require "singleton"
 require "ostruct"
@@ -49,7 +50,7 @@ class FolioClient
     end
 
     delegate :config, :connection, :get, :post, to: :instance
-    delegate :fetch_hrid, :fetch_marc_hash, :has_instance_status?, to: :instance
+    delegate :fetch_hrid, :fetch_marc_hash, :has_instance_status?, :data_import, to: :instance
   end
 
   attr_accessor :config
@@ -64,18 +65,28 @@ class FolioClient
 
     UnexpectedResponse.call(response) unless response.success?
 
+    return nil if response.body.blank?
+
     JSON.parse(response.body)
   end
 
   # Send an authenticated post request
+  # If the body is JSON, it will be automatically serialized
   # @param path [String] the path to the Folio API request
-  # @param request [json] request body to post to the API
-  def post(path, request = nil)
+  # @param body [Object] body to post to the API as JSON
+  def post(path, body = nil, content_type: "application/json")
+    req_body = (content_type == "application/json") ? body&.to_json : body
     response = TokenWrapper.refresh(config, connection) do
-      connection.post(path, request, {"x-okapi-token": config.token})
+      req_headers = {
+        "x-okapi-token": config.token,
+        "content-type": content_type
+      }
+      connection.post(path, req_body, req_headers)
     end
 
     UnexpectedResponse.call(response) unless response.success?
+
+    return nil if response.body.blank?
 
     JSON.parse(response.body)
   end
@@ -102,5 +113,9 @@ class FolioClient
   def has_instance_status?(...)
     inventory = Inventory.new(self)
     inventory.has_instance_status?(...)
+  end
+
+  def data_import(...)
+    DataImport.new(self, ...)
   end
 end
