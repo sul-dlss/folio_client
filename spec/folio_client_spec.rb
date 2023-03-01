@@ -113,19 +113,58 @@ RSpec.describe FolioClient do
     let(:hrid) { "in56789" }
     let(:expired_token) { "expired_token" }
     let(:new_token) { "new_token" }
+    let(:barcode) { "123456" }
+    let(:instance_uuid) { "d71e654b-ca5e-44c0-9621-ae86ffd528d3" }
+    let(:inventory_instance_response) {
+      {"id" => instance_uuid,
+       "_version" => "1",
+       "hrid" => hrid,
+       "source" => "FOLIO",
+       "title" => "Training videos",
+       "isBoundWith" => false,
+       "contributors" => [],
+       "publication" => [],
+       "electronicAccess" => [],
+       "instanceTypeId" => "225faa14-f9bf-4ecd-990d-69433c912434",
+       "statusId" => "2a340d34-6b70-443a-bb1b-1b8d1c65d862",
+       "statusUpdatedDate" => "2023-02-10T21:19:22.285+0000",
+       "metadata" => {},
+       "succeedingTitles" => []}
+    }
+    let(:search_instance_response) {
+      {"totalRecords" => 1,
+       "instances" => [
+         {"id" => instance_uuid,
+          "title" => "Training videos",
+          "contributors" => [{"name" => "Person"}],
+          "isBoundWith" => false,
+          "holdings" => []}
+       ]}
+    }
 
     before do
-      allow(FolioClient::Inventory).to receive(:new).and_return(inventory)
-      allow(FolioClient::Authenticator).to receive(:token).and_return(expired_token, new_token)
-      response_values = [:raise, hrid]
-      allow(inventory).to receive(:fetch_hrid).twice do
-        v = response_values.shift
-        (v == :raise) ? raise(FolioClient::UnauthorizedError) : v
-      end
+      stub_request(:post, "#{url}/authn/login")
+        .to_return(
+          {status: 200, body: "{\"okapiToken\" : \"#{expired_token}\"}"},
+          {status: 200, body: "{\"okapiToken\" : \"#{new_token}\"}"}
+        )
+      stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
+        .with(headers: {"x-okapi-token": expired_token})
+        .to_return(
+          {status: 401, body: "invalid authN token"}
+        )
+      stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
+        .with(headers: {"x-okapi-token": new_token})
+        .to_return(
+          {status: 200, body: search_instance_response.to_json}
+        )
+      stub_request(:get, "#{url}/inventory/instances/#{instance_uuid}")
+        .with(headers: {"x-okapi-token": new_token})
+        .to_return(status: 200, body: inventory_instance_response.to_json)
     end
 
     it "fetches new token and retries" do
-      expect { client.fetch_hrid(barcode: "1234") }
+      expect { client.fetch_hrid(barcode: barcode) }
         .to change(client.config, :token)
         .from(expired_token)
         .to(new_token)
