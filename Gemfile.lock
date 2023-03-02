@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    folio_client (0.6.0)
+    folio_client (0.6.1)
       activesupport (>= 4.2, < 8)
       faraday
       zeitwerk
