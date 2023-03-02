@@ -54,13 +54,63 @@ RSpec.describe FolioClient do
     let(:path) { "some_path" }
     let(:response) { {some: "response"}.to_json }
 
-    before do
-      stub_request(:post, "#{url}/#{path}")
-        .to_return(status: 200, body: response.to_json)
+    context "with a JSON body" do
+      before do
+        stub_request(:post, "#{url}/#{path}")
+          .with(
+            body: "{\"id\":5}",
+            headers: {
+              "Accept" => "application/json, text/plain",
+              "Content-Type" => "application/json",
+              "Some-Bogus-Headers" => "here",
+              "X-Okapi-Token" => "a_long_silly_token"
+            }
+          )
+          .to_return(status: 200, body: response.to_json, headers: {})
+      end
+
+      it "calls the API with a post" do
+        expect(client.post(path, {id: 5})).to eq(response)
+      end
     end
 
-    it "calls the API with a post" do
-      expect(client.post(path, {id: 5})).to eq(response)
+    context "with no body" do
+      before do
+        stub_request(:post, "#{url}/#{path}")
+          .with(
+            body: "",
+            headers: {
+              "Accept" => "application/json, text/plain",
+              "Some-Bogus-Headers" => "here",
+              "X-Okapi-Token" => "a_long_silly_token"
+            }
+          )
+          .to_return(status: 200, body: response.to_json, headers: {})
+      end
+
+      it "calls the API with a post" do
+        expect(client.post(path)).to eq(response)
+      end
+    end
+
+    context "with non-JSON body" do
+      before do
+        stub_request(:post, "#{url}/#{path}")
+          .with(
+            body: "foobar",
+            headers: {
+              "Accept" => "application/json, text/plain",
+              "Content-Type" => "text/plain",
+              "Some-Bogus-Headers" => "here",
+              "X-Okapi-Token" => "a_long_silly_token"
+            }
+          )
+          .to_return(status: 200, body: response.to_json, headers: {})
+      end
+
+      it "calls the API with a post" do
+        expect(client.post(path, "foobar", content_type: "text/plain")).to eq(response)
+      end
     end
   end
 
