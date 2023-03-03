@@ -3,8 +3,7 @@
 RSpec.describe FolioClient::DataImport do
   include Dry::Monads[:result]
 
-  subject(:data_import) { described_class.new(client, marc: marc, job_profile_id: job_profile_id, job_profile_name: job_profile_name) }
-
+  let(:data_import) { described_class.new(client, marc: marc, job_profile_id: job_profile_id, job_profile_name: job_profile_name) }
   let(:args) { {url: url, login_params: login_params, okapi_headers: okapi_headers} }
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
@@ -219,7 +218,6 @@ RSpec.describe FolioClient::DataImport do
     end
   end
 
-  # rubocop:disable RSpec/SubjectStub
   describe "#wait" do
     context "when job is complete" do
       before do
@@ -264,5 +262,4 @@ RSpec.describe FolioClient::DataImport do
       end
     end
   end
-  # rubocop:enable RSpec/SubjectStub
 end
