@@ -9,6 +9,8 @@ AllCops:
 # Per team developer playbook
 RSpec/MultipleMemoizedHelpers:
   Enabled: false
+RSpec/MultipleExpectations:
+  Max: 3
 
 RSpec/BeEq: # new in 2.9.0
   Enabled: true
@@ -39,4 +41,22 @@ RSpec/Rails/AvoidSetupHook: # new in 2.4
 RSpec/Rails/HaveHttpStatus: # new in 2.12
   Enabled: true
 RSpec/Rails/InferredSpecType: # new in 2.14
+  Enabled: true
+Capybara/MatchStyle: # new in 2.17
+  Enabled: true
+Capybara/NegationMatcher: # new in 2.14
+  Enabled: true
+Capybara/SpecificActions: # new in 2.14
+  Enabled: true
+Capybara/SpecificFinders: # new in 2.13
+  Enabled: true
+Capybara/SpecificMatcher: # new in 2.12
+  Enabled: true
+RSpec/DuplicatedMetadata: # new in 2.16
+  Enabled: true
+RSpec/PendingWithoutReason: # new in 2.16
+  Enabled: true
+RSpec/FactoryBot/FactoryNameStyle: # new in 2.16
+  Enabled: true
+RSpec/Rails/MinitestAssertions: # new in 2.17
   Enabled: true

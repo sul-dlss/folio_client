@@ -17,7 +17,7 @@ RSpec.describe FolioClient do
   end
 
   it "has a version number" do
-    expect(FolioClient::VERSION).not_to be nil
+    expect(FolioClient::VERSION).not_to be_nil
   end
 
   it "has singleton behavior" do
