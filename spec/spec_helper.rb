@@ -5,6 +5,7 @@ SimpleCov.start do
   add_filter "spec"
 end
 
+require "byebug"
 require "folio_client"
 require "webmock/rspec"
 

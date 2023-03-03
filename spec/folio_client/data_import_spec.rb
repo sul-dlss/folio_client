@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::DataImport do
-  include Dry::Monads[:result]
-
   let(:data_import) { described_class.new(client, marc: marc, job_profile_id: job_profile_id, job_profile_name: job_profile_name) }
   let(:args) { {url: url, login_params: login_params, okapi_headers: okapi_headers} }
   let(:url) { "https://folio.example.org" }
@@ -130,136 +128,8 @@ RSpec.describe FolioClient::DataImport do
         .to_return(status: 204, body: "", headers: {})
     end
 
-    it "starts the import" do
-      data_import.import
-      expect(data_import.job_execution_id).to eq(job_execution_id)
-    end
-  end
-
-  describe "#job_status" do
-    before do
-      data_import.instance_variable_set(:@job_execution_id, job_execution_id)
-
-      stub_request(:get, "#{url}/metadata-provider/jobSummary/#{job_execution_id}")
-        .with(
-          headers: {
-            "X-Okapi-Token" => "a_long_silly_token"
-          }
-        )
-        .to_return(status: status, body: status_response_body.to_json, headers: {})
-    end
-
-    let(:status) { 200 }
-
-    context "when job is pending" do
-      let(:status_response_body) do
-        {
-          jobExecutionId: job_execution_id,
-          totalErrors: 0,
-          sourceRecordSummary: {
-            totalCreatedEntities: 0,
-            totalUpdatedEntities: 0,
-            totalDiscardedEntities: 0,
-            totalErrors: 0
-          }
-        }
-      end
-
-      it "returns Failure(:pending)" do
-        expect(data_import.job_status).to eq(Failure(:pending))
-      end
-    end
-
-    context "when job error" do
-      let(:status_response_body) do
-        {
-          jobExecutionId: job_execution_id,
-          totalErrors: 1,
-          sourceRecordSummary: {
-            totalCreatedEntities: 0,
-            totalUpdatedEntities: 0,
-            totalDiscardedEntities: 0,
-            totalErrors: 1
-          }
-        }
-      end
-
-      it "returns Failure(:error)" do
-        expect(data_import.job_status).to eq(Failure(:error))
-      end
-    end
-
-    context "when job is complete" do
-      let(:status_response_body) do
-        {
-          jobExecutionId: job_execution_id,
-          totalErrors: 0,
-          sourceRecordSummary: {
-            totalCreatedEntities: 1,
-            totalUpdatedEntities: 0,
-            totalDiscardedEntities: 0,
-            totalErrors: 0
-          }
-        }
-      end
-
-      it "returns Success" do
-        expect(data_import.job_status).to eq(Success())
-      end
-    end
-
-    context "when job is not found" do
-      let(:status) { 404 }
-      let(:status_response_body) { "JobSummary for jobExecutionId: '#{job_execution_id}' was not found" }
-
-      it "returns Failure(:not_found)" do
-        expect(data_import.job_status).to eq(Failure(:not_found))
-      end
-    end
-  end
-
-  describe "#wait" do
-    context "when job is complete" do
-      before do
-        allow(data_import).to receive(:job_status).and_return(Failure(:not_found), Failure(:pending), Success())
-      end
-
-      it "returns Success" do
-        expect(data_import.wait(wait_secs: 0.1)).to eq(Success())
-        expect(data_import).to have_received(:job_status).exactly(3).times
-      end
-    end
-
-    context "when job is error" do
-      before do
-        allow(data_import).to receive(:job_status).and_return(Failure(:pending), Failure(:pending), Failure(:error))
-      end
-
-      it "returns Failure(:error)" do
-        expect(data_import.wait(wait_secs: 0.1)).to eq(Failure(:error))
-        expect(data_import).to have_received(:job_status).exactly(3).times
-      end
-    end
-
-    context "when too many 404s" do
-      before do
-        allow(data_import).to receive(:job_status).and_return(Failure(:not_found))
-      end
-
-      it "raises ResourceNotFound" do
-        expect { data_import.wait(wait_secs: 0.1) }.to raise_error(FolioClient::ResourceNotFound)
-        expect(data_import).to have_received(:job_status).exactly(4).times
-      end
-    end
-
-    context "when timeout" do
-      before do
-        allow(data_import).to receive(:job_status).and_return(Failure(:pending))
-      end
-
-      it "returns Failure(:timeout)" do
-        expect(data_import.wait(wait_secs: 0.5, timeout_secs: 0.25)).to eq(Failure(:timeout))
-      end
+    it "returns a JobStatus instance" do
+      expect(data_import.import).to be_instance_of(FolioClient::JobStatus)
     end
   end
 end
