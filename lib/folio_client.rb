@@ -101,21 +101,26 @@ class FolioClient
 
   # Public methods available on the FolioClient below
   def fetch_hrid(...)
-    inventory = Inventory.new(self)
-    inventory.fetch_hrid(...)
+    Inventory
+      .new(self)
+      .fetch_hrid(...)
   end
 
   def fetch_marc_hash(...)
-    source_storage = SourceStorage.new(self)
-    source_storage.fetch_marc_hash(...)
+    SourceStorage
+      .new(self)
+      .fetch_marc_hash(...)
   end
 
   def has_instance_status?(...)
-    inventory = Inventory.new(self)
-    inventory.has_instance_status?(...)
+    Inventory
+      .new(self)
+      .has_instance_status?(...)
   end
 
   def data_import(...)
-    DataImport.new(self, ...)
+    DataImport
+      .new(self, ...)
+      .import
   end
 end

@@ -73,11 +73,10 @@ client.fetch_marc_hash(instance_hrid: "a7927874")
 
 # Import a MARC record
 data_importer = client.data_import(marc: my_marc, job_profile_id: '4ba4f4ab', job_profile_name: 'ETDs')
-data_importer.import
 # If called too quickly, might get Failure(:not_found)
-data_importer.job_status
+data_importer.status
  => Failure(:pending)
-data_importer.wait
+data_importer.wait_until_complete
  => Success()
 ```
 
