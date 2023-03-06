@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::DataImport do
-  let(:data_import) { described_class.new(client, marc: marc, job_profile_id: job_profile_id, job_profile_name: job_profile_name) }
+  let(:data_import) { described_class.new(client) }
   let(:args) { {url: url, login_params: login_params, okapi_headers: okapi_headers} }
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
@@ -129,7 +129,7 @@ RSpec.describe FolioClient::DataImport do
     end
 
     it "returns a JobStatus instance" do
-      expect(data_import.import).to be_instance_of(FolioClient::JobStatus)
+      expect(data_import.import(marc: marc, job_profile_id: job_profile_id, job_profile_name: job_profile_name)).to be_instance_of(FolioClient::JobStatus)
     end
   end
 end

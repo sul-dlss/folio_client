@@ -8,17 +8,14 @@ class FolioClient
   # Imports MARC records into FOLIO
   class DataImport
     # @param client [FolioClient] the configured client
+    def initialize(client)
+      @client = client
+    end
+
     # @param record [MARC::Record] record to be imported
     # @param job_profile_id [String] job profile id to use for import
     # @param job_profile_name [String] job profile name to use for import
-    def initialize(client, marc:, job_profile_id:, job_profile_name:)
-      @client = client
-      @marc = marc
-      @job_profile_id = job_profile_id
-      @job_profile_name = job_profile_name
-    end
-
-    def import
+    def import(marc:, job_profile_id:, job_profile_name:)
       response_hash = client.post("/data-import/uploadDefinitions", {fileDefinitions: [{name: marc_filename}]})
       upload_definition_id = response_hash.dig("fileDefinitions", 0, "uploadDefinitionId")
       job_execution_id = response_hash.dig("fileDefinitions", 0, "jobExecutionId")
