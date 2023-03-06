@@ -23,8 +23,18 @@ class FolioClient
 
       upload_file_response_hash = client.post("/data-import/uploadDefinitions/#{upload_definition_id}/files/#{file_definition_id}", marc_binary(marc), content_type: "application/octet-stream")
 
-      client.post("/data-import/uploadDefinitions/#{upload_definition_id}/processFiles",
-        {uploadDefinition: upload_file_response_hash, jobProfileInfo: {id: job_profile_id, name: job_profile_name, dataType: "MARC"}})
+      client.post(
+        "/data-import/uploadDefinitions/#{upload_definition_id}/processFiles",
+        {
+          uploadDefinition: upload_file_response_hash,
+          jobProfileInfo: {
+            id: job_profile_id,
+            name: job_profile_name,
+            dataType: "MARC"
+          }
+        }
+      )
+
       JobStatus.new(client, job_execution_id: job_execution_id)
     end
 
