@@ -127,6 +127,83 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe "#fetch_hrid" do
+    let(:barcode) { "123456" }
+    let(:inventory) { instance_double(described_class::Inventory) }
+
+    before do
+      allow(described_class::Inventory).to receive(:new).and_return(inventory)
+      allow(inventory).to receive(:fetch_hrid)
+    end
+
+    it "invokes Inventory#fetch_hrid" do
+      client.fetch_hrid(barcode: barcode)
+      expect(inventory).to have_received(:fetch_hrid).once
+    end
+  end
+
+  describe ".fetch_marc_hash" do
+    let(:instance_hrid) { "a12854819" }
+
+    before do
+      allow(described_class.instance).to receive(:fetch_marc_hash).with(instance_hrid: instance_hrid)
+    end
+
+    it "invokes instance#fetch_marc_hash" do
+      client.fetch_marc_hash(instance_hrid: instance_hrid)
+      expect(client.instance).to have_received(:fetch_marc_hash).with(instance_hrid: instance_hrid)
+    end
+  end
+
+  describe "#fetch_marc_hash" do
+    let(:instance_hrid) { "123456" }
+    let(:source_storage) { instance_double(described_class::SourceStorage) }
+
+    before do
+      allow(described_class::SourceStorage).to receive(:new).and_return(source_storage)
+      allow(source_storage).to receive(:fetch_marc_hash)
+    end
+
+    it "invokes SourceStorage#fetch_marc_hash" do
+      client.fetch_marc_hash(instance_hrid: instance_hrid)
+      expect(source_storage).to have_received(:fetch_marc_hash).once
+    end
+  end
+
+  describe ".data_import" do
+    let(:job_profile_id) { "4ba4f4ab" }
+    let(:job_profile_name) { "ETDs" }
+    let(:marc) { instance_double(MARC::Record) }
+
+    before do
+      allow(described_class.instance).to receive(:data_import)
+        .with(job_profile_id: job_profile_id, job_profile_name: job_profile_name, marc: marc)
+    end
+
+    it "invokes instance#data_import" do
+      client.data_import(job_profile_id: job_profile_id, job_profile_name: job_profile_name, marc: marc)
+      expect(client.instance).to have_received(:data_import)
+        .with(job_profile_id: job_profile_id, job_profile_name: job_profile_name, marc: marc)
+    end
+  end
+
+  describe "#data_import" do
+    let(:job_profile_id) { "4ba4f4ab" }
+    let(:job_profile_name) { "ETDs" }
+    let(:marc) { instance_double(MARC::Record) }
+    let(:importer) { instance_double(described_class::DataImport) }
+
+    before do
+      allow(described_class::DataImport).to receive(:new).and_return(importer)
+      allow(importer).to receive(:import)
+    end
+
+    it "invokes DataImport#import" do
+      client.data_import(job_profile_id: job_profile_id, job_profile_name: job_profile_name, marc: marc)
+      expect(importer).to have_received(:import).once
+    end
+  end
+
   describe ".has_instance_status?" do
     let(:hrid) { "a12854819" }
     let(:status_id) { "1a2b3c4d-1234" }

@@ -7,49 +7,69 @@ RSpec.describe FolioClient::Authenticator do
   let(:okapi_headers) { {some_bogus_headers: "here"} }
   let(:token) { "a_long_silly_token" }
   let(:connection) { FolioClient.configure(**args).connection }
+  let(:http_status) { 200 }
+  let(:http_body) { "{\"okapiToken\" : \"#{token}\"}" }
 
-  context "when correct credentials" do
+  before do
+    stub_request(:post, "#{url}/authn/login").to_return(status: http_status, body: http_body)
+  end
+
+  describe ".token" do
+    let(:instance) { described_class.new(login_params, connection) }
+
     before do
-      stub_request(:post, "#{url}/authn/login")
-        .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
+      allow(described_class).to receive(:new).and_return(instance)
+      allow(instance).to receive(:token)
     end
 
-    describe ".token" do
-      let(:instance) do
-        described_class.new(login_params, connection)
-      end
-
-      before do
-        allow(described_class).to receive(:new).and_return(instance)
-        allow(instance).to receive(:token)
-      end
-
-      it "invokes #token on a new instance" do
-        described_class.token(login_params, connection)
-        expect(instance).to have_received(:token).once
-      end
+    it "invokes #token on a new instance" do
+      described_class.token(login_params, connection)
+      expect(instance).to have_received(:token).once
     end
+  end
 
-    describe "#token" do
-      subject(:authenticator) { described_class.new(login_params, connection) }
+  describe "#token" do
+    subject(:authenticator) { described_class.new(login_params, connection) }
 
+    context "when correct credentials" do
       it "parses the token from the response" do
         expect(authenticator.token).to eq(token)
       end
     end
-  end
 
-  context "when incorrect credentials" do
-    before do
-      stub_request(:post, "#{url}/authn/login")
-        .to_return(status: 422, body: "{\"errror\" : \"get bent\"}")
+    context "when incorrect credentials" do
+      let(:http_status) { 422 }
+      let(:http_body) { "{\"error\" : \"get bent\"}" }
+
+      it "raises an unauthorized error" do
+        expect { authenticator.token }.to raise_error(FolioClient::UnauthorizedError)
+      end
     end
 
-    describe "#token" do
-      subject(:authenticator) { described_class.new(login_params, connection) }
+    context "when client lacks privileges" do
+      let(:http_status) { 403 }
+      let(:http_body) { "{\"error\" : \"get bent\"}" }
 
-      it "raises the correct exception" do
-        expect { authenticator.token }.to raise_error(FolioClient::UnauthorizedError)
+      it "raises a forbidden error" do
+        expect { authenticator.token }.to raise_error(FolioClient::ForbiddenError)
+      end
+    end
+
+    context "when service is unavailable" do
+      let(:http_status) { 500 }
+      let(:http_body) { "{\"error\" : \"get bent\"}" }
+
+      it "raises a service unavailable exception" do
+        expect { authenticator.token }.to raise_error(FolioClient::ServiceUnavailable)
+      end
+    end
+
+    context "when the truly unexpected happens" do
+      let(:http_status) { 666 }
+      let(:http_body) { "{\"error\" : \"huh?\"}" }
+
+      it "raises a standard error" do
+        expect { authenticator.token }.to raise_error(StandardError, /Unexpected response/)
       end
     end
   end

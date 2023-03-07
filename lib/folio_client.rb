@@ -120,7 +120,7 @@ class FolioClient
 
   def data_import(...)
     DataImport
-      .new(self, ...)
-      .import
+      .new(self)
+      .import(...)
   end
 end
