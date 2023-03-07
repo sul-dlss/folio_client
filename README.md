@@ -78,6 +78,8 @@ data_importer.status
  => Failure(:pending)
 data_importer.wait_until_complete
  => Success()
+data_importer.instance_hrid
+ => Success("in00000000010")
 ```
 
 ## Development

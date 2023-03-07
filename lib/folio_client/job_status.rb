@@ -33,10 +33,41 @@ class FolioClient
       Failure(:not_found)
     end
 
-    def wait_until_complete(wait_secs: 1, timeout_secs: 5 * 60)
+    def wait_until_complete(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs)
+      wait_with_timeout(wait_secs: wait_secs, timeout_secs: timeout_secs) { status }
+    end
+
+    def instance_hrid
+      current_status = status
+      return current_status unless current_status.success?
+
+      @instance_hrid ||= wait_with_timeout do
+        response = client
+          .get("/metadata-provider/journalRecords/#{job_execution_id}")
+          .fetch("journalRecords", [])
+          .find { |journal_record| journal_record["entityType"] == "INSTANCE" }
+          &.fetch("entityHrId", nil)
+
+        response.nil? ? Failure() : Success(response)
+      end
+    end
+
+    private
+
+    attr_reader :client
+
+    def default_wait_secs
+      1
+    end
+
+    def default_timeout_secs
+      5 * 60
+    end
+
+    def wait_with_timeout(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs)
       Timeout.timeout(timeout_secs) do
         loop.with_index do |_, i|
-          result = status
+          result = yield
 
           # If a 404, wait a bit longer before raising an error.
           check_not_found(result, i)
@@ -48,10 +79,6 @@ class FolioClient
     rescue Timeout::Error
       Failure(:timeout)
     end
-
-    private
-
-    attr_reader :client
 
     def done_waiting?(result)
       result.success? || (result.failure? && result.failure == :error)
