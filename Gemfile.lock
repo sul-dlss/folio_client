@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    folio_client (0.6.1)
+    folio_client (0.7.0)
       activesupport (>= 4.2, < 8)
       dry-monads
       faraday
