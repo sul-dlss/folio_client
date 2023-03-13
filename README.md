@@ -80,6 +80,17 @@ data_importer.wait_until_complete
  => Success()
 data_importer.instance_hrid
  => Success("in00000000010")
+
+# Create a Holdings record
+holdings_client = client.holdings(instance_id: "99a6d818-d523-42f3-9844-81cf3187dbad")
+holdings_client.create(permanent_location_id: "1b14e21c-8d47-45c7-bc49-456a0086422b", holdings_type_id: "996f93e2-5b5e-4cf2-9168-33ced1f95eed")
+ => {
+    "id" => "581f6289-001f-49d1-bab7-035f4d878cbd",
+    "_version" => 1,
+    "hrid" => "ho00000000065",
+    "holdingsTypeId" => "996f93e2-5b5e-4cf2-9168-33ced1f95eed"
+    ...
+ }
 ```
 
 ## Development

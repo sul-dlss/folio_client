@@ -13,7 +13,7 @@ class FolioClient
       when 404
         raise ResourceNotFound, "Endpoint not found or resource does not exist: #{response.body}"
       when 422
-        raise UnauthorizedError, "There was a problem fetching the access token: #{response.body} "
+        raise ValidationError, "There was a validation problem with the request: #{response.body} "
       when 500
         raise ServiceUnavailable, "The remote server returned an internal server error."
       else

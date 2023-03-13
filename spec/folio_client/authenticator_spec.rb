@@ -38,7 +38,7 @@ RSpec.describe FolioClient::Authenticator do
     end
 
     context "when incorrect credentials" do
-      let(:http_status) { 422 }
+      let(:http_status) { 401 }
       let(:http_body) { "{\"error\" : \"get bent\"}" }
 
       it "raises an unauthorized error" do
