@@ -17,7 +17,7 @@ class FolioClient
   # Base class for all FolioClient errors
   class Error < StandardError; end
 
-  # Error raised by the Folio Auth API returns a 422 Unauthorized
+  # Error raised by the Folio Auth API returns a 401 Unauthorized
   class UnauthorizedError < Error; end
 
   # Error raised when the Folio API returns a 404 NotFound, or returns 0 results when one was expected
@@ -31,6 +31,9 @@ class FolioClient
 
   # Error raised when the Folio API returns a 500
   class ServiceUnavailable < Error; end
+
+  # Error raised when the Folio API returns a 422 Unprocessable Entity
+  class ValidationError < Error; end
 
   DEFAULT_HEADERS = {
     accept: "application/json, text/plain",
@@ -50,7 +53,7 @@ class FolioClient
     end
 
     delegate :config, :connection, :get, :post, to: :instance
-    delegate :fetch_hrid, :fetch_marc_hash, :has_instance_status?, :data_import, to: :instance
+    delegate :fetch_hrid, :fetch_marc_hash, :has_instance_status?, :data_import, :holdings, to: :instance
   end
 
   attr_accessor :config
@@ -122,5 +125,10 @@ class FolioClient
     DataImport
       .new(self)
       .import(...)
+  end
+
+  def holdings(...)
+    Holdings
+      .new(self, ...)
   end
 end
