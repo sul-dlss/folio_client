@@ -52,7 +52,7 @@ class FolioClient
       self
     end
 
-    delegate :config, :connection, :get, :post, to: :instance
+    delegate :config, :connection, :get, :post, :put, to: :instance
     delegate :fetch_hrid, :fetch_marc_hash, :has_instance_status?, :data_import, :holdings, to: :instance
   end
 
@@ -85,6 +85,27 @@ class FolioClient
         "content-type": content_type
       }
       connection.post(path, req_body, req_headers)
+    end
+
+    UnexpectedResponse.call(response) unless response.success?
+
+    return nil if response.body.blank?
+
+    JSON.parse(response.body)
+  end
+
+  # Send an authenticated put request
+  # If the body is JSON, it will be automatically serialized
+  # @param path [String] the path to the Folio API request
+  # @param body [Object] body to put to the API as JSON
+  def put(path, body = nil, content_type: "application/json")
+    req_body = (content_type == "application/json") ? body&.to_json : body
+    response = TokenWrapper.refresh(config, connection) do
+      req_headers = {
+        "x-okapi-token": config.token,
+        "content-type": content_type
+      }
+      connection.put(path, req_body, req_headers)
     end
 
     UnexpectedResponse.call(response) unless response.success?

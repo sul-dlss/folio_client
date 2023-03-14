@@ -114,6 +114,70 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe "#put" do
+    let(:path) { "some_path" }
+    let(:response) { {some: "response"}.to_json }
+
+    context "with a JSON body" do
+      before do
+        stub_request(:put, "#{url}/#{path}")
+          .with(
+            body: "{\"id\":5}",
+            headers: {
+              "Accept" => "application/json, text/plain",
+              "Content-Type" => "application/json",
+              "Some-Bogus-Headers" => "here",
+              "X-Okapi-Token" => "a_long_silly_token"
+            }
+          )
+          .to_return(status: 200, body: response.to_json, headers: {})
+      end
+
+      it "calls the API with a put" do
+        expect(client.put(path, {id: 5})).to eq(response)
+      end
+    end
+
+    context "with no body" do
+      before do
+        stub_request(:put, "#{url}/#{path}")
+          .with(
+            body: "",
+            headers: {
+              "Accept" => "application/json, text/plain",
+              "Some-Bogus-Headers" => "here",
+              "X-Okapi-Token" => "a_long_silly_token"
+            }
+          )
+          .to_return(status: 200, body: response.to_json, headers: {})
+      end
+
+      it "calls the API with a put" do
+        expect(client.put(path)).to eq(response)
+      end
+    end
+
+    context "with non-JSON body" do
+      before do
+        stub_request(:put, "#{url}/#{path}")
+          .with(
+            body: "foobar",
+            headers: {
+              "Accept" => "application/json, text/plain",
+              "Content-Type" => "text/plain",
+              "Some-Bogus-Headers" => "here",
+              "X-Okapi-Token" => "a_long_silly_token"
+            }
+          )
+          .to_return(status: 200, body: response.to_json, headers: {})
+      end
+
+      it "calls the API with a put" do
+        expect(client.put(path, "foobar", content_type: "text/plain")).to eq(response)
+      end
+    end
+  end
+
   describe ".fetch_hrid" do
     let(:barcode) { "123456" }
 
