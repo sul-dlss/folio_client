@@ -454,4 +454,48 @@ RSpec.describe FolioClient do
       expect(described_class::Holdings).to have_received(:new).with(client, instance_id: instance_id)
     end
   end
+
+  describe ".edit_marc_json" do
+    let(:hrid) { "in00000000067" }
+    let(:mock_marc_json) do
+      {"001" => "foo", "856" => "bar", "245" => "baz"}
+    end
+
+    before do
+      allow(described_class.instance).to receive(:edit_marc_json).and_yield(mock_marc_json)
+    end
+
+    it "invokes instance#edit_marc_json on the caller's block" do # rubocop:disable RSpec/ExampleLength
+      block_ran = false
+      client.edit_marc_json(hrid: hrid) do |marc_json|
+        expect(marc_json).to be mock_marc_json
+        block_ran = true
+      end
+      expect(block_ran).to be true
+      expect(client.instance).to have_received(:edit_marc_json).with(hrid: hrid)
+    end
+  end
+
+  describe "#edit_marc_json" do
+    let(:hrid) { "in00000000067" }
+    let(:records_editor) { instance_double(described_class::RecordsEditor) }
+    let(:mock_marc_json) do
+      {"001" => "foo", "856" => "bar", "245" => "baz"}
+    end
+
+    before do
+      allow(described_class::RecordsEditor).to receive(:new).with(client).and_return(records_editor)
+      allow(records_editor).to receive(:edit_marc_json).and_yield(mock_marc_json)
+    end
+
+    it "invokes RecordsEditor#edit_marc_json on the caller's block" do # rubocop:disable RSpec/ExampleLength
+      block_ran = false
+      client.edit_marc_json(hrid: hrid) do |marc_json|
+        expect(marc_json).to be mock_marc_json
+        block_ran = true
+      end
+      expect(block_ran).to be true
+      expect(records_editor).to have_received(:edit_marc_json).with(hrid: hrid)
+    end
+  end
 end
