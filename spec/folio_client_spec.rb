@@ -206,6 +206,70 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe ".fetch_external_id" do
+    let(:hrid) { "in00000000067" }
+    let(:external_id) { "5108040a-65bc-40ed-bd50-265958301ce4" }
+
+    before do
+      allow(described_class.instance).to receive(:fetch_external_id).with(hrid: hrid).and_return(external_id)
+    end
+
+    it "invokes instance#fetch_external_id and passes along the return value" do
+      expect(client.fetch_external_id(hrid: hrid)).to eq external_id
+      expect(client.instance).to have_received(:fetch_external_id).with(hrid: hrid)
+    end
+  end
+
+  describe "#fetch_external_id" do
+    let(:hrid) { "in00000000067" }
+    let(:inventory) { instance_double(described_class::Inventory) }
+    let(:external_id) { "5108040a-65bc-40ed-bd50-265958301ce4" }
+
+    before do
+      allow(described_class::Inventory).to receive(:new).with(client).and_return(inventory)
+      allow(inventory).to receive(:fetch_external_id).with(hrid: hrid).and_return(external_id)
+    end
+
+    it "invokes Inventory#fetch_external_id and passes along the return value" do
+      expect(client.fetch_external_id(hrid: hrid)).to eq external_id
+      expect(inventory).to have_received(:fetch_external_id).once
+    end
+  end
+
+  describe ".fetch_instance_info" do
+    let(:external_id) { "5108040a-65bc-40ed-bd50-265958301ce4" }
+    let(:instance_info) do
+      {"id" => external_id, "version" => 2, "hrid" => "in00000000010"}
+    end
+
+    before do
+      allow(described_class.instance).to receive(:fetch_instance_info).with(external_id: external_id).and_return(instance_info)
+    end
+
+    it "invokes instance#fetch_instance_info and passes along the return value" do
+      expect(client.fetch_instance_info(external_id: external_id)).to eq instance_info
+      expect(client.instance).to have_received(:fetch_instance_info).with(external_id: external_id)
+    end
+  end
+
+  describe "#fetch_instance_info" do
+    let(:external_id) { "5108040a-65bc-40ed-bd50-265958301ce4" }
+    let(:inventory) { instance_double(described_class::Inventory) }
+    let(:instance_info) do
+      {"id" => external_id, "version" => 2, "hrid" => "in00000000010"}
+    end
+
+    before do
+      allow(described_class::Inventory).to receive(:new).with(client).and_return(inventory)
+      allow(inventory).to receive(:fetch_instance_info).with(external_id: external_id).and_return(instance_info)
+    end
+
+    it "invokes Inventory#fetch_instance_info and passes along the return value" do
+      expect(client.fetch_instance_info(external_id: external_id)).to eq instance_info
+      expect(inventory).to have_received(:fetch_instance_info).once
+    end
+  end
+
   describe ".fetch_marc_hash" do
     let(:instance_hrid) { "a12854819" }
 
@@ -388,6 +452,50 @@ RSpec.describe FolioClient do
     it "returns new Holdings" do
       client.holdings(instance_id: instance_id)
       expect(described_class::Holdings).to have_received(:new).with(client, instance_id: instance_id)
+    end
+  end
+
+  describe ".edit_marc_json" do
+    let(:hrid) { "in00000000067" }
+    let(:mock_marc_json) do
+      {"001" => "foo", "856" => "bar", "245" => "baz"}
+    end
+
+    before do
+      allow(described_class.instance).to receive(:edit_marc_json).and_yield(mock_marc_json)
+    end
+
+    it "invokes instance#edit_marc_json on the caller's block" do # rubocop:disable RSpec/ExampleLength
+      block_ran = false
+      client.edit_marc_json(hrid: hrid) do |marc_json|
+        expect(marc_json).to be mock_marc_json
+        block_ran = true
+      end
+      expect(block_ran).to be true
+      expect(client.instance).to have_received(:edit_marc_json).with(hrid: hrid)
+    end
+  end
+
+  describe "#edit_marc_json" do
+    let(:hrid) { "in00000000067" }
+    let(:records_editor) { instance_double(described_class::RecordsEditor) }
+    let(:mock_marc_json) do
+      {"001" => "foo", "856" => "bar", "245" => "baz"}
+    end
+
+    before do
+      allow(described_class::RecordsEditor).to receive(:new).with(client).and_return(records_editor)
+      allow(records_editor).to receive(:edit_marc_json).and_yield(mock_marc_json)
+    end
+
+    it "invokes RecordsEditor#edit_marc_json on the caller's block" do # rubocop:disable RSpec/ExampleLength
+      block_ran = false
+      client.edit_marc_json(hrid: hrid) do |marc_json|
+        expect(marc_json).to be mock_marc_json
+        block_ran = true
+      end
+      expect(block_ran).to be true
+      expect(records_editor).to have_received(:edit_marc_json).with(hrid: hrid)
     end
   end
 end
