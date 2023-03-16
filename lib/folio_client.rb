@@ -53,7 +53,7 @@ class FolioClient
     end
 
     delegate :config, :connection, :get, :post, :put, to: :instance
-    delegate :fetch_hrid, :fetch_marc_hash, :has_instance_status?, :data_import, :holdings, to: :instance
+    delegate :fetch_hrid, :fetch_external_id, :fetch_instance_info, :fetch_marc_hash, :has_instance_status?, :data_import, :holdings, to: :instance
   end
 
   attr_accessor :config
@@ -128,6 +128,18 @@ class FolioClient
     Inventory
       .new(self)
       .fetch_hrid(...)
+  end
+
+  def fetch_external_id(...)
+    Inventory
+      .new(self)
+      .fetch_external_id(...)
+  end
+
+  def fetch_instance_info(...)
+    Inventory
+      .new(self)
+      .fetch_instance_info(...)
   end
 
   def fetch_marc_hash(...)
