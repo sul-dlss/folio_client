@@ -53,7 +53,8 @@ class FolioClient
     end
 
     delegate :config, :connection, :get, :post, :put, to: :instance
-    delegate :fetch_hrid, :fetch_external_id, :fetch_instance_info, :fetch_marc_hash, :has_instance_status?, :data_import, :edit_marc_json, to: :instance
+    delegate :fetch_hrid, :fetch_external_id, :fetch_instance_info, :fetch_marc_hash, :has_instance_status?, :data_import, :edit_marc_json,
+      :organizations, :organization_interfaces, :interface_details, to: :instance
   end
 
   attr_accessor :config
@@ -172,5 +173,23 @@ class FolioClient
     RecordsEditor
       .new(self)
       .edit_marc_json(...)
+  end
+
+  def organizations(...)
+    Organizations
+      .new(self)
+      .fetch_list(...)
+  end
+
+  def organization_interfaces(...)
+    Organizations
+      .new(self)
+      .fetch_interface_list(...)
+  end
+
+  def interface_details(...)
+    Organizations
+      .new(self)
+      .fetch_interface_details(...)
   end
 end

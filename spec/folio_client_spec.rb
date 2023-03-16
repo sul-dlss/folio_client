@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "marc"
+
 RSpec.describe FolioClient do
   subject(:client) do
     described_class.configure(**args)
@@ -359,6 +361,81 @@ RSpec.describe FolioClient do
     it "invokes Inventory#has_instance_status?" do
       client.public_send(:has_instance_status?, hrid: hrid, status_id: status_id)
       expect(inventory).to have_received(:has_instance_status?).once
+    end
+  end
+
+  describe ".organizations" do
+    before do
+      allow(described_class.instance).to receive(:organizations)
+    end
+
+    it "invokes instance#organizations" do
+      client.organizations
+      expect(client.instance).to have_received(:organizations)
+    end
+  end
+
+  describe "#organizations" do
+    let(:organizations) { instance_double(described_class::Organizations) }
+
+    before do
+      allow(described_class::Organizations).to receive(:new).and_return(organizations)
+      allow(organizations).to receive(:fetch_list)
+    end
+
+    it "invokes Organizations#fetch_list" do
+      client.public_send(:organizations)
+      expect(organizations).to have_received(:fetch_list).once
+    end
+  end
+
+  describe ".organization_interfaces" do
+    before do
+      allow(described_class.instance).to receive(:organization_interfaces).with(query: "something")
+    end
+
+    it "invokes instance#organization_interfaces" do
+      client.organization_interfaces(query: "something")
+      expect(client.instance).to have_received(:organization_interfaces).with(query: "something")
+    end
+  end
+
+  describe "#organization_interfaces" do
+    let(:organizations) { instance_double(described_class::Organizations) }
+
+    before do
+      allow(described_class::Organizations).to receive(:new).and_return(organizations)
+      allow(organizations).to receive(:fetch_interface_list).with(query: "something")
+    end
+
+    it "invokes Organizations#fetch_interface_list" do
+      client.public_send(:organization_interfaces, query: "something")
+      expect(organizations).to have_received(:fetch_interface_list).with(query: "something").once
+    end
+  end
+
+  describe ".interface_details" do
+    before do
+      allow(described_class.instance).to receive(:interface_details).with(id: "something")
+    end
+
+    it "invokes instance#interface_details" do
+      client.interface_details(id: "something")
+      expect(client.instance).to have_received(:interface_details).with(id: "something")
+    end
+  end
+
+  describe "#interface_details" do
+    let(:organizations) { instance_double(described_class::Organizations) }
+
+    before do
+      allow(described_class::Organizations).to receive(:new).and_return(organizations)
+      allow(organizations).to receive(:fetch_interface_details).with(id: "something")
+    end
+
+    it "invokes Organizations#fetch_interface_details" do
+      client.public_send(:interface_details, id: "something")
+      expect(organizations).to have_received(:fetch_interface_details).with(id: "something").once
     end
   end
 

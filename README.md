@@ -80,6 +80,49 @@ data_importer.wait_until_complete
  => Success()
 data_importer.instance_hrid
  => Success("in00000000010")
+
+# Get list of organizations (filtered with an optional query)
+# see https://s3.amazonaws.com/foliodocs/api/mod-organizations/p/organizations.html#organizations_organizations_get
+ client.organizations
+ => {"organizations"=>[
+     {"id"=>"4b1a42f9-b310-492c-a71d-b8edcd30ac0c",
+    "name"=>"Seventh Art Releasing",
+    "code"=>"7ART-SUL",
+    "exportToAccounting"=>true,
+    "status"=>"Active",
+    "organizationTypes"=>[],
+    "aliases"=>[],
+    "addresses"=>],.....
+    "totalRecords"=>100}
+
+client.organizations(query: 'name="Seventh"')
+=> {"organizations"=>[....
+
+# Get list of organization interface items (filtered with an optional query)
+# see https://s3.amazonaws.com/foliodocs/api/mod-organizations-storage/p/interface.html#organizations_storage_interfaces_get
+client.organization_interfaces
+ => {"interfaces"=>
+        [{"id"=>"c6f7470e-6229-45ce-b3f9-32006e9affcf",
+          "name"=>"tes",
+          "type"=>["Invoices"],
+    .....],....
+    "totalRecords"=>100}
+
+ client.organization_interfaces(query: 'name="tes"')
+  => {"interfaces"=>....
+
+# Get details for a specific organization interface
+# see https://s3.amazonaws.com/foliodocs/api/mod-organizations-storage/p/interface.html#organizations_storage_interfaces__id__get
+client.interface_details(id: 'c6f7470e-6229-45ce-b3f9-32006e9affcf')
+ =>
+    {"id"=>"c6f7470e-6229-45ce-b3f9-32006e9affcf",
+    "name"=>"tes",
+    "type"=>["Invoices"],
+    "metadata"=>
+    {"createdDate"=>"2023-02-16T22:27:51.515+00:00",
+    "createdByUserId"=>"38524916-598d-4edf-a2ef-04bba7e78ad6",
+    "updatedDate"=>"2023-02-16T22:27:51.515+00:00",
+    "updatedByUserId"=>"38524916-598d-4edf-a2ef-04bba7e78ad6"}}
 ```
 
 ## Development
