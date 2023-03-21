@@ -10,8 +10,9 @@ class FolioClient
       @client = client
     end
 
-    # @param barcode [String] barcode to search by to fetch the HRID
-    # @return [String,nil] HRID if present, otherwise nil.
+    # get instance HRID from barcode
+    # @param barcode [String] barcode
+    # @return [String,nil] instance HRID if present, otherwise nil.
     def fetch_hrid(barcode:)
       # find the instance UUID for this barcode
       instance = client.get("/search/instances", {query: "items.barcode==#{barcode}"})
@@ -24,8 +25,9 @@ class FolioClient
       result.dig("hrid")
     end
 
-    # @param hrid [String] HRID to search by to fetch the external ID
-    # @return [String,nil] external ID if present, otherwise nil.
+    # get instance external ID from HRID
+    # @param hrid [String] instance HRID
+    # @return [String,nil] instance external ID if present, otherwise nil.
     # @raise [ResourceNotFound, MultipleResourcesFound] if search does not return exactly 1 result
     def fetch_external_id(hrid:)
       instance_response = client.get("/search/instances", {query: "hrid==#{hrid}"})
@@ -36,11 +38,11 @@ class FolioClient
       instance_response.dig("instances", 0, "id")
     end
 
-    # Retrieve basic information about a record.  Example usage: get the external ID and _version for update using
+    # Retrieve basic information about a instance record.  Example usage: get the external ID and _version for update using
     #  optimistic locking when the HRID is available: `fetch_instance_info(hrid: 'a1234').slice('id', '_version')`
     #  (or vice versa if the external ID is available).
-    # @param external_id [String] an external ID for looking up info about the record
-    # @param hrid [String] an HRID for looking up info about the record
+    # @param external_id [String] an external ID for the desired instance record
+    # @param hrid [String] an instance HRID for the desired instance record
     # @return [Hash] information about the record.
     # @raise [ArgumentError] if the caller does not provide exactly one of external_id or hrid
     def fetch_instance_info(external_id: nil, hrid: nil)
@@ -51,9 +53,10 @@ class FolioClient
       client.get("/inventory/instances/#{external_id}")
     end
 
-    # @param hrid [String] folio instance HRID
+    # @param hrid [String] instance HRID
     # @param status_id [String] uuid for an instance status code
-    # @raise [ResourceNotFound] if search by hrid returns 0 results
+    # @return true if instance status matches the uuid param, false otherwise
+    # @raise [ResourceNotFound] if search by instance HRID returns 0 results
     def has_instance_status?(hrid:, status_id:)
       # get the instance record and its statusId
       instance = client.get("/inventory/instances", {query: "hrid==#{hrid}"})
