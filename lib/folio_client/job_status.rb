@@ -57,7 +57,7 @@ class FolioClient
     attr_reader :client
 
     def default_wait_secs
-      1
+      5
     end
 
     def default_timeout_secs
