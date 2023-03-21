@@ -71,7 +71,7 @@ client.fetch_marc_hash(instance_hrid: "a7927874")
   [{"003"=>"FOLIO"}....]
   }
 
-# Import a MARC record
+# Import a MARC record into FOLIO
 data_importer = client.data_import(marc: my_marc, job_profile_id: '4ba4f4ab', job_profile_name: 'ETDs')
 # If called too quickly, might get Failure(:not_found)
 data_importer.status
