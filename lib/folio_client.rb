@@ -124,47 +124,56 @@ class FolioClient
   end
 
   # Public methods available on the FolioClient below
+
+  # @see Inventory#fetch_hrid
   def fetch_hrid(...)
     Inventory
       .new(self)
       .fetch_hrid(...)
   end
 
+  # @see Inventory#fetch_external_id
   def fetch_external_id(...)
     Inventory
       .new(self)
       .fetch_external_id(...)
   end
 
+  # @see Inventory#fetch_instance_info
   def fetch_instance_info(...)
     Inventory
       .new(self)
       .fetch_instance_info(...)
   end
 
+  # @see SourceStorage#fetch_marc_hash
   def fetch_marc_hash(...)
     SourceStorage
       .new(self)
       .fetch_marc_hash(...)
   end
 
+  # @see Inventory#has_instance_status?
   def has_instance_status?(...)
     Inventory
       .new(self)
       .has_instance_status?(...)
   end
 
+  # @ see DataImport#import
   def data_import(...)
     DataImport
       .new(self)
       .import(...)
   end
 
+  # @deprecated
   def holdings(...)
     Holdings
       .new(self, ...)
   end
 
+  # @see RecordsEditor.edit_marc_json
   def edit_marc_json(...)
     RecordsEditor
       .new(self)
