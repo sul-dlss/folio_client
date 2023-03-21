@@ -10,6 +10,7 @@ class FolioClient
       @client = client
     end
 
+    # get marc bib data from folio given an instance HRID
     # @param instance_hrid [String] the key to use for MARC lookup
     # @return [Hash] hash representation of the MARC. should be usable by MARC::Record.new_from_hash (from ruby-marc gem)
     # @raises NotFound, MultipleRecordsForIdentifier
