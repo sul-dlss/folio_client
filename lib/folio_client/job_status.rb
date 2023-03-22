@@ -87,7 +87,7 @@ class FolioClient
     def check_not_found(result, index)
       return unless result.failure? && result.failure == :not_found && index > 2
 
-      raise ResourceNotFound, "Job not found"
+      raise ResourceNotFound, "Job #{job_execution_id} not found after #{index} retries"
     end
   end
 end

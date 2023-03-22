@@ -65,7 +65,7 @@ client.fetch_hrid(barcode: "12345")
  => "a7927874"
 
 # Request a MARC record given an instance hrid
-# returns a hash if found; raises FolioClient::UnexpectedResponse::ResourceNotFound if instance_hrid not found
+# returns a hash if found; raises FolioClient::ResourceNotFound if instance_hrid not found
 client.fetch_marc_hash(instance_hrid: "a7927874")
  => {"fields"=>
   [{"003"=>"FOLIO"}....]
