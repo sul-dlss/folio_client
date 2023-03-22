@@ -5,7 +5,7 @@
 
 # FolioClient
 
-FolioClient is a Ruby gem that acts as a client to the RESTful HTTP APIs provided by the Folio ILS API.  It requires ruby 3.0 or better.
+FolioClient is a Ruby gem that acts as a client to the RESTful HTTP APIs provided by the Folio ILS API. It requires ruby 3.0 or better.
 
 ## Installation
 
@@ -48,7 +48,7 @@ client = FolioClient.configure(
 )
 ```
 
-The client is smart enough to automatically request a new token if it detects the one it is using has expired.  If for some reason, you want to immediately request a new token, you can do this:
+The client is smart enough to automatically request a new token if it detects the one it is using has expired. If for some reason, you want to immediately request a new token, you can do this:
 
 ```ruby
 client.config.token = FolioClient::Authenticator.token(client.config.login_params, client.connection)
@@ -56,7 +56,7 @@ client.config.token = FolioClient::Authenticator.token(client.config.login_param
 
 ## API Coverage
 
-FolioClient provides a number of methods to simplify connecting to the RESTful HTTP API of the Folio API. In this section we list all of the available methods, reflecting how much of the API the client covers.  Note that this assumes the client has already been configured, as described above.  See dor-services-app for an example of configuration and usage.
+FolioClient provides a number of methods to simplify connecting to the RESTful HTTP API of the Folio API. In this section we list all of the available methods, reflecting how much of the API the client covers. Note that this assumes the client has already been configured, as described above. See dor-services-app for an example of configuration and usage.
 
 ```ruby
 # Lookup an instance hrid given a barcode
@@ -82,6 +82,7 @@ data_importer.instance_hrid
  => Success("in00000000010")
 
 # Create a Holdings record
+# @deprecated - we no longer need to create Folio holdings records
 holdings_client = client.holdings(instance_id: "99a6d818-d523-42f3-9844-81cf3187dbad")
 holdings_client.create(permanent_location_id: "1b14e21c-8d47-45c7-bc49-456a0086422b", holdings_type_id: "996f93e2-5b5e-4cf2-9168-33ced1f95eed")
  => {
