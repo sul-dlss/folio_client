@@ -426,35 +426,6 @@ RSpec.describe FolioClient do
     end
   end
 
-  describe ".holdings" do
-    let(:instance_id) { "99a6d818-d523-42f3-9844-81cf3187dbad" }
-
-    before do
-      allow(described_class.instance).to receive(:holdings)
-        .with(instance_id: instance_id)
-    end
-
-    it "invokes instance#holdings" do
-      client.holdings(instance_id: instance_id)
-      expect(client.instance).to have_received(:holdings)
-        .with(instance_id: instance_id)
-    end
-  end
-
-  describe "#holdings" do
-    let(:instance_id) { "99a6d818-d523-42f3-9844-81cf3187dbad" }
-    let(:holdings_client) { instance_double(described_class::Holdings) }
-
-    before do
-      allow(described_class::Holdings).to receive(:new).and_return(holdings_client)
-    end
-
-    it "returns new Holdings" do
-      client.holdings(instance_id: instance_id)
-      expect(described_class::Holdings).to have_received(:new).with(client, instance_id: instance_id)
-    end
-  end
-
   describe ".edit_marc_json" do
     let(:hrid) { "in00000000067" }
     let(:mock_marc_json) do

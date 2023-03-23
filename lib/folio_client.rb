@@ -53,7 +53,7 @@ class FolioClient
     end
 
     delegate :config, :connection, :get, :post, :put, to: :instance
-    delegate :fetch_hrid, :fetch_external_id, :fetch_instance_info, :fetch_marc_hash, :has_instance_status?, :data_import, :holdings, :edit_marc_json, to: :instance
+    delegate :fetch_hrid, :fetch_external_id, :fetch_instance_info, :fetch_marc_hash, :has_instance_status?, :data_import, :edit_marc_json, to: :instance
   end
 
   attr_accessor :config
@@ -165,12 +165,6 @@ class FolioClient
     DataImport
       .new(self)
       .import(...)
-  end
-
-  # @deprecated
-  def holdings(...)
-    Holdings
-      .new(self, ...)
   end
 
   # @see RecordsEditor.edit_marc_json
