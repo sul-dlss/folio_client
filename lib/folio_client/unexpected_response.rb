@@ -16,6 +16,10 @@ class FolioClient
         raise ValidationError, "There was a validation problem with the request: #{response.body} "
       when 500
         raise ServiceUnavailable, "The remote server returned an internal server error."
+      when 400
+        raise DuplicateKeyError, "Server could not handle concurrent requests" if response.body.match?(/idx_records_matched_id_gen/)
+
+        raise StandardError, "Unexpected response: #{response.status} #{response.body}"
       else
         raise StandardError, "Unexpected response: #{response.status} #{response.body}"
       end

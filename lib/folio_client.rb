@@ -35,6 +35,9 @@ class FolioClient
   # Error raised when the Folio API returns a 422 Unprocessable Entity
   class ValidationError < Error; end
 
+  # @see RecordsEditor#edit_marc_json
+  class DuplicateKeyError < Error; end
+
   DEFAULT_HEADERS = {
     accept: "application/json, text/plain",
     content_type: "application/json"
