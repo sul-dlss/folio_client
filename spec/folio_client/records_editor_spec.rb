@@ -90,7 +90,7 @@ RSpec.describe FolioClient::RecordsEditor do
     allow(client).to receive(:put)
   end
 
-  it "obtains the MARC JSON, yields it to the caller, and PUTs the edited JSON back to Folio (inserting version for optimistic locking)" do # rubocop:disable RSpec/ExampleLength
+  it "obtains the MARC JSON, yields it to the caller, and PUTs the edited JSON back to Folio (inserting version for optimistic locking)" do
     records_editor.edit_marc_json(hrid: hrid) do |editable_response_json|
       expect(editable_response_json).to eq mock_response_json
       editable_response_json["fields"].detect { |field| field["tag"] == "245" }["content"] = "$a title updated by unit test / $c Author Name."

@@ -436,7 +436,7 @@ RSpec.describe FolioClient do
       allow(described_class.instance).to receive(:edit_marc_json).and_yield(mock_marc_json)
     end
 
-    it "invokes instance#edit_marc_json on the caller's block" do # rubocop:disable RSpec/ExampleLength
+    it "invokes instance#edit_marc_json on the caller's block" do
       block_ran = false
       client.edit_marc_json(hrid: hrid) do |marc_json|
         expect(marc_json).to be mock_marc_json
@@ -459,7 +459,7 @@ RSpec.describe FolioClient do
       allow(records_editor).to receive(:edit_marc_json).and_yield(mock_marc_json)
     end
 
-    it "invokes RecordsEditor#edit_marc_json on the caller's block" do # rubocop:disable RSpec/ExampleLength
+    it "invokes RecordsEditor#edit_marc_json on the caller's block" do
       block_ran = false
       client.edit_marc_json(hrid: hrid) do |marc_json|
         expect(marc_json).to be mock_marc_json
