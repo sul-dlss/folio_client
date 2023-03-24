@@ -12,4 +12,3 @@ inherit_gem:
 
 inherit_from:
   - .rubocop/custom.yml
-  - .rubocop_todo.yml

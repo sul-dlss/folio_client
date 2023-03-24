@@ -55,6 +55,15 @@ RSpec.describe FolioClient::Authenticator do
       end
     end
 
+    context "when client sends invalid request" do
+      let(:http_status) { 422 }
+      let(:http_body) { "{\"error\" : \"get bent\"}" }
+
+      it "raises a validation error" do
+        expect { authenticator.token }.to raise_error(FolioClient::ValidationError)
+      end
+    end
+
     context "when service is unavailable" do
       let(:http_status) { 500 }
       let(:http_body) { "{\"error\" : \"get bent\"}" }
