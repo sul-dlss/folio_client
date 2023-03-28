@@ -12,10 +12,12 @@ class FolioClient
         raise ForbiddenError, "The operation requires privileges which the client does not have: #{response.body}"
       when 404
         raise ResourceNotFound, "Endpoint not found or resource does not exist: #{response.body}"
+      when 409
+        raise ConflictError, "Resource cannot be updated: #{response.body}"
       when 422
-        raise ValidationError, "There was a validation problem with the request: #{response.body} "
+        raise ValidationError, "There was a validation problem with the request: #{response.body}"
       when 500
-        raise ServiceUnavailable, "The remote server returned an internal server error."
+        raise ServiceUnavailable, "The remote server returned an internal server error: #{response.body}"
       else
         raise StandardError, "Unexpected response: #{response.status} #{response.body}"
       end

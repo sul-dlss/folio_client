@@ -35,6 +35,9 @@ class FolioClient
   # Error raised when the Folio API returns a 422 Unprocessable Entity
   class ValidationError < Error; end
 
+  # Error raised when the Folio API returns a 409 Conflict
+  class ConflictError < Error; end
+
   DEFAULT_HEADERS = {
     accept: "application/json, text/plain",
     content_type: "application/json"
@@ -120,7 +123,8 @@ class FolioClient
   def connection
     @connection ||= Faraday.new(
       url: config.url,
-      headers: DEFAULT_HEADERS.merge(config.okapi_headers || {})
+      headers: DEFAULT_HEADERS.merge(config.okapi_headers || {}),
+      request: {timeout: 120}
     )
   end
 
