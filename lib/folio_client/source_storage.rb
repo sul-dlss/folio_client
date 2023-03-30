@@ -13,7 +13,8 @@ class FolioClient
     # get marc bib data from folio given an instance HRID
     # @param instance_hrid [String] the key to use for MARC lookup
     # @return [Hash] hash representation of the MARC. should be usable by MARC::Record.new_from_hash (from ruby-marc gem)
-    # @raises NotFound, MultipleRecordsForIdentifier
+    # @raise [ResourceNotFound]
+    # @raise [MultipleResourcesFound]
     def fetch_marc_hash(instance_hrid:)
       response_hash = client.get("/source-storage/source-records", {instanceHrid: instance_hrid})
 
