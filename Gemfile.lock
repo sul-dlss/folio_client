@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    folio_client (0.10.0)
+    folio_client (0.10.1)
       activesupport (>= 4.2, < 8)
       dry-monads
       faraday
@@ -116,6 +116,7 @@ PLATFORMS
   x86_64-darwin-19
   x86_64-darwin-20
   x86_64-darwin-21
+  x86_64-darwin-22
   x86_64-linux
 
 DEPENDENCIES

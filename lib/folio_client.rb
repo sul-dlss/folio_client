@@ -61,7 +61,7 @@ class FolioClient
 
   # Send an authenticated get request
   # @param path [String] the path to the Folio API request
-  # @param request [Hash] params to get to the API
+  # @param params [Hash] params to get to the API
   def get(path, params = {})
     response = TokenWrapper.refresh(config, connection) do
       connection.get(path, params, {"x-okapi-token": config.token})
