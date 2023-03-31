@@ -33,6 +33,10 @@ RSpec.describe FolioClient do
       expect(client.config.okapi_headers).to eq(okapi_headers)
     end
 
+    it "gets the default timeout value" do
+      expect(client.config.timeout).to eq(120)
+    end
+
     it "stores the fetched token in the config" do
       expect(client.config.token).to eq(token)
     end
