@@ -47,15 +47,15 @@ class FolioClient
     # @param url [String] the folio API URL
     # @param login_params [Hash] the folio client login params (username:, password:)
     # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
-    def configure(url:, login_params:, okapi_headers:)
-      instance.config = OpenStruct.new(url: url, login_params: login_params, okapi_headers: okapi_headers, token: nil)
+    def configure(url:, login_params:, okapi_headers:, timeout: default_timeout)
+      instance.config = OpenStruct.new(url: url, login_params: login_params, okapi_headers: okapi_headers, token: nil, timeout: timeout)
 
       instance.config.token = Authenticator.token(login_params, connection)
 
       self
     end
 
-    delegate :config, :connection, :get, :post, :put, to: :instance
+    delegate :config, :connection, :get, :post, :put, :default_timeout, to: :instance
     delegate :fetch_hrid, :fetch_external_id, :fetch_instance_info, :fetch_marc_hash, :has_instance_status?, :data_import, :edit_marc_json,
       :organizations, :organization_interfaces, :interface_details, to: :instance
   end
@@ -124,7 +124,7 @@ class FolioClient
     @connection ||= Faraday.new(
       url: config.url,
       headers: DEFAULT_HEADERS.merge(config.okapi_headers || {}),
-      request: {timeout: 120}
+      request: {timeout: config.timeout}
     )
   end
 
@@ -195,5 +195,9 @@ class FolioClient
     Organizations
       .new(self)
       .fetch_interface_details(...)
+  end
+
+  def default_timeout
+    120
   end
 end

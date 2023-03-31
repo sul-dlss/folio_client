@@ -73,6 +73,15 @@ RSpec.describe FolioClient::Authenticator do
       end
     end
 
+    context "when the service returns a 409 conflict error" do
+      let(:http_status) { 409 }
+      let(:http_body) { "{\"error\" : \"get bent\"}" }
+
+      it "raises a conflict error exception" do
+        expect { authenticator.token }.to raise_error(FolioClient::ConflictError)
+      end
+    end
+
     context "when the truly unexpected happens" do
       let(:http_status) { 666 }
       let(:http_body) { "{\"error\" : \"huh?\"}" }
