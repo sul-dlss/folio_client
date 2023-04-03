@@ -15,6 +15,7 @@ class FolioClient
     # @param record [MARC::Record] record to be imported
     # @param job_profile_id [String] job profile id to use for import
     # @param job_profile_name [String] job profile name to use for import
+    # @return [JobStatus] a job status instance to get information about the data import job
     def import(marc:, job_profile_id:, job_profile_name:)
       response_hash = client.post("/data-import/uploadDefinitions", {fileDefinitions: [{name: marc_filename}]})
       upload_definition_id = response_hash.dig("fileDefinitions", 0, "uploadDefinitionId")
