@@ -338,6 +338,31 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe ".job_profiles" do
+    before do
+      allow(described_class.instance).to receive(:job_profiles)
+    end
+
+    it "invokes instance#job_profiles" do
+      client.job_profiles
+      expect(client.instance).to have_received(:job_profiles)
+    end
+  end
+
+  describe "#job_profiles" do
+    let(:importer) { instance_double(described_class::DataImport) }
+
+    before do
+      allow(described_class::DataImport).to receive(:new).and_return(importer)
+      allow(importer).to receive(:job_profiles)
+    end
+
+    it "invokes DataImport#job_profiles" do
+      client.job_profiles
+      expect(importer).to have_received(:job_profiles).once
+    end
+  end
+
   describe ".has_instance_status?" do
     let(:hrid) { "a12854819" }
     let(:status_id) { "1a2b3c4d-1234" }

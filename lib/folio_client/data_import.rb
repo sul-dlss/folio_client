@@ -7,6 +7,8 @@ require "stringio"
 class FolioClient
   # Imports MARC records into FOLIO
   class DataImport
+    JOB_PROFILE_ATTRIBUTES = %w[id name description dataType].freeze
+
     # @param client [FolioClient] the configured client
     def initialize(client)
       @client = client
@@ -37,6 +39,14 @@ class FolioClient
       )
 
       JobStatus.new(client, job_execution_id: job_execution_id)
+    end
+
+    # @return [Array<Hash<String,String>>] a list of job profile hashes
+    def job_profiles
+      client
+        .get("/data-import-profiles/jobProfiles")
+        .fetch("jobProfiles", [])
+        .map { |profile| profile.slice(*JOB_PROFILE_ATTRIBUTES) }
     end
 
     private
