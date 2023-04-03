@@ -48,16 +48,24 @@ class FolioClient
     # @param login_params [Hash] the folio client login params (username:, password:)
     # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
     def configure(url:, login_params:, okapi_headers:, timeout: default_timeout)
-      instance.config = OpenStruct.new(url: url, login_params: login_params, okapi_headers: okapi_headers, token: nil, timeout: timeout)
+      instance.config = OpenStruct.new(
+        url: url,
+        login_params: login_params,
+        okapi_headers: okapi_headers,
+        timeout: timeout
+      )
 
+      # NOTE: The token cannot be set above, since `#connection` relies on
+      #       `instance.config` parameters having already been set.
       instance.config.token = Authenticator.token(login_params, connection)
 
       self
     end
 
-    delegate :config, :connection, :get, :post, :put, :default_timeout, to: :instance
-    delegate :fetch_hrid, :fetch_external_id, :fetch_instance_info, :fetch_marc_hash, :has_instance_status?, :data_import, :edit_marc_json,
-      :organizations, :organization_interfaces, :interface_details, to: :instance
+    delegate :config, :connection, :data_import, :default_timeout, :edit_marc_json,
+      :fetch_external_id, :fetch_hrid, :fetch_instance_info, :fetch_marc_hash, :get,
+      :has_instance_status?, :interface_details, :organization_interfaces, :organizations,
+      :post, :put, to: :instance
   end
 
   attr_accessor :config
