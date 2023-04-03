@@ -180,25 +180,28 @@ class FolioClient
       .import(...)
   end
 
-  # @see RecordsEditor.edit_marc_json
+  # @see RecordsEditor#edit_marc_json
   def edit_marc_json(...)
     RecordsEditor
       .new(self)
       .edit_marc_json(...)
   end
 
+  # @see Organizations#fetch_list
   def organizations(...)
     Organizations
       .new(self)
       .fetch_list(...)
   end
 
+  # @see Organizations#fetch_interface_list
   def organization_interfaces(...)
     Organizations
       .new(self)
       .fetch_interface_list(...)
   end
 
+  # @see Organizations#fetch_interface_details
   def interface_details(...)
     Organizations
       .new(self)
