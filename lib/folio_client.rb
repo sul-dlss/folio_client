@@ -64,8 +64,8 @@ class FolioClient
 
     delegate :config, :connection, :data_import, :default_timeout, :edit_marc_json,
       :fetch_external_id, :fetch_hrid, :fetch_instance_info, :fetch_marc_hash, :get,
-      :has_instance_status?, :interface_details, :organization_interfaces, :organizations,
-      :post, :put, to: :instance
+      :has_instance_status?, :interface_details, :job_profiles, :organization_interfaces,
+      :organizations, :post, :put, to: :instance
   end
 
   attr_accessor :config
@@ -178,6 +178,13 @@ class FolioClient
     DataImport
       .new(self)
       .import(...)
+  end
+
+  # @ see DataImport#job_profiles
+  def job_profiles(...)
+    DataImport
+      .new(self)
+      .job_profiles(...)
   end
 
   # @see RecordsEditor#edit_marc_json
