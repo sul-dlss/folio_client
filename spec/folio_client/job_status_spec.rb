@@ -29,7 +29,7 @@ RSpec.describe FolioClient::JobStatus do
 
   describe "#status" do
     before do
-      stub_request(:get, "#{url}/metadata-provider/jobSummary/#{job_execution_id}")
+      stub_request(:get, "#{url}/change-manager/jobExecutions/#{job_execution_id}")
         .with(
           headers: {
             "X-Okapi-Token" => token
@@ -43,14 +43,8 @@ RSpec.describe FolioClient::JobStatus do
     context "when job is pending" do
       let(:status_response_body) do
         {
-          jobExecutionId: job_execution_id,
-          totalErrors: 0,
-          sourceRecordSummary: {
-            totalCreatedEntities: 0,
-            totalUpdatedEntities: 0,
-            totalDiscardedEntities: 0,
-            totalErrors: 0
-          }
+          id: job_execution_id,
+          status: "PARSING_IN_PROGRESS"
         }
       end
 
@@ -62,33 +56,21 @@ RSpec.describe FolioClient::JobStatus do
     context "when job error" do
       let(:status_response_body) do
         {
-          jobExecutionId: job_execution_id,
-          totalErrors: 1,
-          sourceRecordSummary: {
-            totalCreatedEntities: 0,
-            totalUpdatedEntities: 0,
-            totalDiscardedEntities: 0,
-            totalErrors: 1
-          }
+          id: job_execution_id,
+          status: "ERROR"
         }
       end
 
-      it "returns Failure(:error)" do
-        expect(job_status.status).to eq(Failure(:error))
+      it "returns Success()" do
+        expect(job_status.status).to eq(Success())
       end
     end
 
     context "when job is complete" do
       let(:status_response_body) do
         {
-          jobExecutionId: job_execution_id,
-          totalErrors: 0,
-          sourceRecordSummary: {
-            totalCreatedEntities: 1,
-            totalUpdatedEntities: 0,
-            totalDiscardedEntities: 0,
-            totalErrors: 0
-          }
+          id: job_execution_id,
+          status: "COMMITTED"
         }
       end
 
@@ -152,7 +134,7 @@ RSpec.describe FolioClient::JobStatus do
     end
   end
 
-  describe "#instance_hrid" do
+  describe "#instance_hrids" do
     before do
       allow(job_status).to receive(:status).and_return(current_status)
       allow(job_status).to receive(:default_timeout_secs).and_return(1)
@@ -232,14 +214,14 @@ RSpec.describe FolioClient::JobStatus do
     end
 
     it "returns Success with the instance HRID" do
-      expect(job_status.instance_hrid).to eq(Success("in00000000010"))
+      expect(job_status.instance_hrids).to eq(Success(["in00000000010"]))
     end
 
     context "when current status is not successful" do
       let(:current_status) { Failure(:pending) }
 
       it "returns the current status" do
-        expect(job_status.instance_hrid).to eq(current_status)
+        expect(job_status.instance_hrids).to eq(current_status)
       end
     end
 
@@ -248,7 +230,7 @@ RSpec.describe FolioClient::JobStatus do
       let(:status) { 404 }
 
       it "raises ResourceNotFound" do
-        expect { job_status.instance_hrid }.to raise_error(FolioClient::ResourceNotFound, /Endpoint not found/)
+        expect { job_status.instance_hrids }.to raise_error(FolioClient::ResourceNotFound, /Endpoint not found/)
       end
     end
 
@@ -261,7 +243,7 @@ RSpec.describe FolioClient::JobStatus do
       end
 
       it "returns Failure indicating timeout" do
-        expect(job_status.instance_hrid).to eq(Failure(:timeout))
+        expect(job_status.instance_hrids).to eq(Failure(:timeout))
       end
     end
 
@@ -269,7 +251,7 @@ RSpec.describe FolioClient::JobStatus do
       let(:journal_records_response) { {} }
 
       it "returns Failure indicating timeout" do
-        expect(job_status.instance_hrid).to eq(Failure(:timeout))
+        expect(job_status.instance_hrids).to eq(Failure(:timeout))
       end
     end
 
@@ -326,7 +308,7 @@ RSpec.describe FolioClient::JobStatus do
       end
 
       it "returns Failure indicating no instance HRID" do
-        expect(job_status.instance_hrid).to eq(Failure(:timeout))
+        expect(job_status.instance_hrids).to eq(Failure(:timeout))
       end
     end
   end

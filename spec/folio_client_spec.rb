@@ -307,24 +307,24 @@ RSpec.describe FolioClient do
   describe ".data_import" do
     let(:job_profile_id) { "4ba4f4ab" }
     let(:job_profile_name) { "ETDs" }
-    let(:marc) { instance_double(MARC::Record) }
+    let(:records) { [instance_double(MARC::Record)] }
 
     before do
       allow(described_class.instance).to receive(:data_import)
-        .with(job_profile_id: job_profile_id, job_profile_name: job_profile_name, marc: marc)
+        .with(job_profile_id: job_profile_id, job_profile_name: job_profile_name, records: records)
     end
 
     it "invokes instance#data_import" do
-      client.data_import(job_profile_id: job_profile_id, job_profile_name: job_profile_name, marc: marc)
+      client.data_import(job_profile_id: job_profile_id, job_profile_name: job_profile_name, records: records)
       expect(client.instance).to have_received(:data_import)
-        .with(job_profile_id: job_profile_id, job_profile_name: job_profile_name, marc: marc)
+        .with(job_profile_id: job_profile_id, job_profile_name: job_profile_name, records: records)
     end
   end
 
   describe "#data_import" do
     let(:job_profile_id) { "4ba4f4ab" }
     let(:job_profile_name) { "ETDs" }
-    let(:marc) { instance_double(MARC::Record) }
+    let(:records) { [instance_double(MARC::Record)] }
     let(:importer) { instance_double(described_class::DataImport) }
 
     before do
@@ -333,7 +333,7 @@ RSpec.describe FolioClient do
     end
 
     it "invokes DataImport#import" do
-      client.data_import(job_profile_id: job_profile_id, job_profile_name: job_profile_name, marc: marc)
+      client.data_import(job_profile_id: job_profile_id, job_profile_name: job_profile_name, records: records)
       expect(importer).to have_received(:import).once
     end
   end

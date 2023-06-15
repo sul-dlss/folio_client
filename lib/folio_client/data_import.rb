@@ -14,17 +14,21 @@ class FolioClient
       @client = client
     end
 
-    # @param record [MARC::Record] record to be imported
+    # @param records [Array<MARC::Record>] records to be imported
     # @param job_profile_id [String] job profile id to use for import
     # @param job_profile_name [String] job profile name to use for import
     # @return [JobStatus] a job status instance to get information about the data import job
-    def import(marc:, job_profile_id:, job_profile_name:)
+    def import(records:, job_profile_id:, job_profile_name:)
       response_hash = client.post("/data-import/uploadDefinitions", {fileDefinitions: [{name: marc_filename}]})
       upload_definition_id = response_hash.dig("fileDefinitions", 0, "uploadDefinitionId")
       job_execution_id = response_hash.dig("fileDefinitions", 0, "jobExecutionId")
       file_definition_id = response_hash.dig("fileDefinitions", 0, "id")
 
-      upload_file_response_hash = client.post("/data-import/uploadDefinitions/#{upload_definition_id}/files/#{file_definition_id}", marc_binary(marc), content_type: "application/octet-stream")
+      upload_file_response_hash = client.post(
+        "/data-import/uploadDefinitions/#{upload_definition_id}/files/#{file_definition_id}",
+        marc_binary(records),
+        content_type: "application/octet-stream"
+      )
 
       client.post(
         "/data-import/uploadDefinitions/#{upload_definition_id}/processFiles",
@@ -51,16 +55,16 @@ class FolioClient
 
     private
 
-    attr_reader :client, :marc, :job_profile_id, :job_profile_name
+    attr_reader :client, :job_profile_id, :job_profile_name
 
     def marc_filename
       @marc_filename ||= "#{DateTime.now.iso8601}.marc"
     end
 
-    def marc_binary(marc)
+    def marc_binary(records)
       StringIO.open do |io|
         MARC::Writer.new(io) do |writer|
-          writer.write(marc)
+          records.each { |record| writer.write(record) }
         end
         io.string
       end
