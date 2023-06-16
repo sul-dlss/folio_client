@@ -17,15 +17,17 @@ class FolioClient
       @job_execution_id = job_execution_id
     end
 
-    # @return [Dry::Monads::Result] Success if job is complete,
-    # Failure(:pending) if job is still running,
-    # Failure(:error) if job has errors
-    # Failure(:not_found) if job is not found
+    # @todo An "ERROR" approach means one or more records failed, but it does
+    #       not mean they all fail. We will likely need a more nuanced way to
+    #       handle this eventually.
+    #
+    # @return [Dry::Monads::Result] Success() if job is complete,
+    #                               Failure(:pending) if job is still running,
+    #                               Failure(:not_found) if job is not found
     def status
-      response_hash = client.get("/metadata-provider/jobSummary/#{job_execution_id}")
+      response_hash = client.get("/change-manager/jobExecutions/#{job_execution_id}")
 
-      return Failure(:error) if response_hash["totalErrors"].positive?
-      return Failure(:pending) if response_hash.dig("sourceRecordSummary", "totalCreatedEntities").zero? && response_hash.dig("sourceRecordSummary", "totalUpdatedEntities").zero?
+      return Failure(:pending) if !["COMMITTED", "ERROR"].include?(response_hash["status"])
 
       Success()
     rescue ResourceNotFound
@@ -37,18 +39,18 @@ class FolioClient
       wait_with_timeout(wait_secs: wait_secs, timeout_secs: timeout_secs) { status }
     end
 
-    def instance_hrid
+    def instance_hrids
       current_status = status
       return current_status unless current_status.success?
 
-      @instance_hrid ||= wait_with_timeout do
+      @instance_hrids ||= wait_with_timeout do
         response = client
           .get("/metadata-provider/journalRecords/#{job_execution_id}")
           .fetch("journalRecords", [])
-          .find { |journal_record| journal_record["entityType"] == "INSTANCE" }
-          &.fetch("entityHrId", nil)
+          .select { |journal_record| journal_record["entityType"] == "INSTANCE" && journal_record["actionStatus"] == "COMPLETED" }
+          .filter_map { |instance_record| instance_record["entityHrId"] }
 
-        response.nil? ? Failure() : Success(response)
+        response.empty? ? Failure() : Success(response)
       end
     end
 
@@ -61,7 +63,7 @@ class FolioClient
     end
 
     def default_timeout_secs
-      5 * 60
+      10 * 60
     end
 
     def wait_with_timeout(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs)

@@ -71,15 +71,15 @@ client.fetch_marc_hash(instance_hrid: "a7927874")
   [{"003"=>"FOLIO"}....]
   }
 
-# Import a MARC record into FOLIO
-data_importer = client.data_import(marc: my_marc, job_profile_id: '4ba4f4ab', job_profile_name: 'ETDs')
+# Import MARC records into FOLIO
+data_importer = client.data_import(records: [marc_record1, marc_record2], job_profile_id: '4ba4f4ab', job_profile_name: 'ETDs')
 # If called too quickly, might get Failure(:not_found)
 data_importer.status
  => Failure(:pending)
 data_importer.wait_until_complete
  => Success()
-data_importer.instance_hrid
- => Success("in00000000010")
+data_importer.instance_hrids
+ => Success(["in00000000010", "in00000000011"])
 
 # Get list of organizations (filtered with an optional query)
 # see https://s3.amazonaws.com/foliodocs/api/mod-organizations/p/organizations.html#organizations_organizations_get

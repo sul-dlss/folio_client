@@ -16,10 +16,13 @@ RSpec.describe FolioClient::DataImport do
   end
 
   describe "#import" do
-    let(:marc) do
-      MARC::Record.new.tap do |record|
-        record << MARC::DataField.new("245", "0", " ", ["a", "Folio 21: a bibliography of the Folio Society 1947-1967"])
-      end
+    let(:marc_file_name) { "2023-03-01T11:17:25-05:00.marc" }
+    let(:records) do
+      [
+        MARC::Record.new.tap do |record|
+          record << MARC::DataField.new("245", "0", " ", ["a", "Folio 21: a bibliography of the Folio Society 1947-1967"])
+        end
+      ]
     end
     let(:job_profile_id) { "ae0a94d0" }
     let(:job_profile_name) { "ETDs" }
@@ -28,7 +31,7 @@ RSpec.describe FolioClient::DataImport do
       {
         fileDefinitions:
         [
-          {name: "2023-03-01T11:17:25-05:00.marc"}
+          {name: marc_file_name}
         ]
       }
     end
@@ -41,7 +44,7 @@ RSpec.describe FolioClient::DataImport do
         fileDefinitions: [
           {
             id: "181f6315-aa98-4b4d-ab1f-3c7f9df524b1",
-            name: "2023-03-01T11:17:25-05:00.marc",
+            name: marc_file_name,
             status: "NEW",
             jobExecutionId: job_execution_id,
             uploadDefinitionId: "d39546ed-622b-4e09-92ca-210535ff7ab4",
@@ -66,7 +69,7 @@ RSpec.describe FolioClient::DataImport do
         fileDefinitions: [
           {
             id: "181f6315-aa98-4b4d-ab1f-3c7f9df524b1",
-            name: "2023-03-01T11:17:25-05:00.marc",
+            name: marc_file_name,
             status: "UPLOADED",
             jobExecutionId: job_execution_id,
             uploadDefinitionId: "d39546ed-622b-4e09-92ca-210535ff7ab4",
@@ -127,7 +130,7 @@ RSpec.describe FolioClient::DataImport do
     end
 
     it "returns a JobStatus instance" do
-      expect(data_import.import(marc: marc, job_profile_id: job_profile_id, job_profile_name: job_profile_name)).to be_instance_of(FolioClient::JobStatus)
+      expect(data_import.import(records: records, job_profile_id: job_profile_id, job_profile_name: job_profile_name)).to be_instance_of(FolioClient::JobStatus)
     end
   end
 
