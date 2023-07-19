@@ -23,19 +23,38 @@ class FolioClient
     #   * As opposed to the expected behavior of the "winner" getting a 200 ok response, and the "loser" getting a 409 conflict response.
     # @todo If this is a problem in practice, see if it's possible to have Folio respond in a more standard way; or, workaround with error handling.
     def edit_marc_json(hrid:)
-      instance_info = client.fetch_instance_info(hrid: hrid)
+      retry_srs_retrieval do 
+        instance_info = client.fetch_instance_info(hrid: hrid)
 
-      version = instance_info["_version"]
-      external_id = instance_info["id"]
+        version = instance_info["_version"]
+        external_id = instance_info["id"]
 
-      record_json = client.get("/records-editor/records", {externalId: external_id})
+        record_json = client.get("/records-editor/records", {externalId: external_id})
+        # if recordState is not ACTUAL (e.g. ERROR), retry
+        raise StandardError unless record_json["updateInfo"]["recordState"] == "ACTUAL"
+        
+        parsed_record_id = record_json["parsedRecordId"]
+        record_json["relatedRecordVersion"] = version # setting this field on the JSON we send back is what will allow optimistic locking to catch stale updates
 
-      parsed_record_id = record_json["parsedRecordId"]
-      record_json["relatedRecordVersion"] = version # setting this field on the JSON we send back is what will allow optimistic locking to catch stale updates
+        yield record_json
 
-      yield record_json
+        client.put("/records-editor/records/#{parsed_record_id}", record_json)
+      end
+    end
 
-      client.put("/records-editor/records/#{parsed_record_id}", record_json)
+    MAX_TRIES = 5
+
+    def retry_srs_retrieval
+      @try_count ||= 0
+      yield
+    rescue StandardError
+      @try_count += 1
+      if @try_count <= MAX_TRIES
+        sleep 10
+        retry
+      else 
+        raise StandardError, "Source record does not have status 'ACTUAL' after #{MAX_TRIES} tries"
+      end
     end
   end
 end
