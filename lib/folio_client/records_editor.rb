@@ -29,10 +29,13 @@ class FolioClient
         version = instance_info["_version"]
         external_id = instance_info["id"]
 
-        record_json = client.get("/records-editor/records", {externalId: external_id})
-        # if recordState is not ACTUAL (e.g. ERROR), retry
-        raise StandardError unless record_json["updateInfo"]["recordState"] == "ACTUAL"
+        # use change-manager to check record state
+        change_json = client.get("/change-manager/parsedRecords", {externalId: external_id})
         
+        # if recordState is not ACTUAL (e.g. ERROR), retry
+        raise StandardError unless change_json["recordState"] == "ACTUAL"
+
+        record_json = client.get("/records-editor/records", {externalId: external_id})
         parsed_record_id = record_json["parsedRecordId"]
         record_json["relatedRecordVersion"] = version # setting this field on the JSON we send back is what will allow optimistic locking to catch stale updates
 
