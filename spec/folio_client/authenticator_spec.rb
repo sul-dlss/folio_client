@@ -5,7 +5,7 @@ RSpec.describe FolioClient::Authenticator do
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
-  let(:token) { "a_long_silly_token" }
+  let(:token) { "a temporary dummy token to avoid hitting the API before it is needed" }
   let(:connection) { FolioClient.configure(**args).connection }
   let(:http_status) { 200 }
   let(:http_body) { "{\"okapiToken\" : \"#{token}\"}" }

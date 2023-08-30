@@ -28,14 +28,19 @@ class FolioClient
       version = instance_info["_version"]
       external_id = instance_info["id"]
 
-      record_json = client.get("/records-editor/records", {externalId: external_id})
+      response = client.connection.get("/records-editor/records", {externalId: external_id}, client.http_get_headers)
+      UnexpectedResponse.call(response) unless response.success?
+      record_json = JSON.parse(response.body)
 
       parsed_record_id = record_json["parsedRecordId"]
+
       record_json["relatedRecordVersion"] = version # setting this field on the JSON we send back is what will allow optimistic locking to catch stale updates
 
       yield record_json
 
-      client.put("/records-editor/records/#{parsed_record_id}", record_json)
+      response = client.connection.put("/records-editor/records/#{parsed_record_id}", record_json, client.http_post_and_put_headers)
+      UnexpectedResponse.call(response) unless response.success?
+      JSON.parse(response.body)
     end
   end
 end

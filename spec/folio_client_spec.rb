@@ -11,7 +11,7 @@ RSpec.describe FolioClient do
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
-  let(:token) { "a_long_silly_token" }
+  let(:token) { "a temporary dummy token to avoid hitting the API before it is needed" }
 
   before do
     stub_request(:post, "#{url}/authn/login")
@@ -37,7 +37,7 @@ RSpec.describe FolioClient do
       expect(client.config.timeout).to eq(120)
     end
 
-    it "stores the fetched token in the config" do
+    it "stores a dummy token in the config" do
       expect(client.config.token).to eq(token)
     end
   end
@@ -69,7 +69,7 @@ RSpec.describe FolioClient do
               "Accept" => "application/json, text/plain",
               "Content-Type" => "application/json",
               "Some-Bogus-Headers" => "here",
-              "X-Okapi-Token" => "a_long_silly_token"
+              "X-Okapi-Token" => token
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -88,7 +88,7 @@ RSpec.describe FolioClient do
             headers: {
               "Accept" => "application/json, text/plain",
               "Some-Bogus-Headers" => "here",
-              "X-Okapi-Token" => "a_long_silly_token"
+              "X-Okapi-Token" => token
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -108,7 +108,7 @@ RSpec.describe FolioClient do
               "Accept" => "application/json, text/plain",
               "Content-Type" => "text/plain",
               "Some-Bogus-Headers" => "here",
-              "X-Okapi-Token" => "a_long_silly_token"
+              "X-Okapi-Token" => token
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -133,7 +133,7 @@ RSpec.describe FolioClient do
               "Accept" => "application/json, text/plain",
               "Content-Type" => "application/json",
               "Some-Bogus-Headers" => "here",
-              "X-Okapi-Token" => "a_long_silly_token"
+              "X-Okapi-Token" => token
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -152,7 +152,7 @@ RSpec.describe FolioClient do
             headers: {
               "Accept" => "application/json, text/plain",
               "Some-Bogus-Headers" => "here",
-              "X-Okapi-Token" => "a_long_silly_token"
+              "X-Okapi-Token" => token
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -172,7 +172,7 @@ RSpec.describe FolioClient do
               "Accept" => "application/json, text/plain",
               "Content-Type" => "text/plain",
               "Some-Bogus-Headers" => "here",
-              "X-Okapi-Token" => "a_long_silly_token"
+              "X-Okapi-Token" => token
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -472,7 +472,6 @@ RSpec.describe FolioClient do
   context "when token is expired" do
     let(:inventory) { instance_double(FolioClient::Inventory, fetch_hrid: nil) }
     let(:hrid) { "in56789" }
-    let(:expired_token) { "expired_token" }
     let(:new_token) { "new_token" }
     let(:barcode) { "123456" }
     let(:instance_uuid) { "d71e654b-ca5e-44c0-9621-ae86ffd528d3" }
@@ -506,11 +505,10 @@ RSpec.describe FolioClient do
     before do
       stub_request(:post, "#{url}/authn/login")
         .to_return(
-          {status: 200, body: "{\"okapiToken\" : \"#{expired_token}\"}"},
           {status: 200, body: "{\"okapiToken\" : \"#{new_token}\"}"}
         )
       stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
-        .with(headers: {"x-okapi-token": expired_token})
+        .with(headers: {"x-okapi-token": token})
         .to_return(
           {status: 401, body: "invalid authN token"}
         )
@@ -527,7 +525,7 @@ RSpec.describe FolioClient do
     it "fetches new token and retries" do
       expect { client.fetch_hrid(barcode: barcode) }
         .to change(client.config, :token)
-        .from(expired_token)
+        .from(token)
         .to(new_token)
     end
   end

@@ -9,7 +9,7 @@ RSpec.describe FolioClient::Inventory do
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
-  let(:token) { "a_long_silly_token" }
+  let(:token) { "a temporary dummy token to avoid hitting the API before it is needed" }
   let(:client) { FolioClient.configure(**args) }
   let(:barcode) { "123456" }
   let(:instance_uuid) { "some_long_uuid_that_is_long" }

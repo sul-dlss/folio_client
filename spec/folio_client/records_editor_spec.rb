@@ -11,8 +11,8 @@ RSpec.describe FolioClient::RecordsEditor do
   let(:client) { FolioClient.configure(**args) }
   let(:hrid) { "in00000000067" }
   let(:external_id) { "5108040a-65bc-40ed-bd50-265958301ce4" }
-
-  let(:mock_response_json) do
+  let(:mock_response) { instance_double(Faraday::Response, body: mock_response_body.to_json, success?: true) }
+  let(:mock_response_body) do
     {"parsedRecordId" => "1ab23862-46db-4da9-af5b-633adbf5f90f",
      "parsedRecordDtoId" => "1281ae0b-548b-49e3-b740-050f28e6d57f",
      "suppressDiscovery" => false,
@@ -86,23 +86,24 @@ RSpec.describe FolioClient::RecordsEditor do
     stub_request(:post, "#{url}/authn/login")
       .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
     allow(client).to receive(:fetch_instance_info).with(hrid: hrid).and_return({"_version" => 1, "id" => external_id})
-    allow(client).to receive(:get).with("/records-editor/records", {externalId: external_id}).and_return(mock_response_json)
-    allow(client).to receive(:put)
+    allow(client.connection).to receive(:get).with("/records-editor/records", {externalId: external_id}, anything).and_return(mock_response)
+    allow(client.connection).to receive(:put).and_return(instance_double(Faraday::Response, body: "{}", success?: true))
   end
 
   it "obtains the MARC JSON, yields it to the caller, and PUTs the edited JSON back to Folio (inserting version for optimistic locking)" do
     records_editor.edit_marc_json(hrid: hrid) do |editable_response_json|
-      expect(editable_response_json).to eq mock_response_json
+      expect(editable_response_json).to eq mock_response_body.tap { |record| record["relatedRecordVersion"] = 1 }
       editable_response_json["fields"].detect { |field| field["tag"] == "245" }["content"] = "$a title updated by unit test / $c Author Name."
     end
-    expect(client).to have_received(:put).with(
-      "/records-editor/records/#{mock_response_json["parsedRecordId"]}",
+    expect(client.connection).to have_received(:put).with(
+      "/records-editor/records/#{mock_response_body["parsedRecordId"]}",
       hash_including({"parsedRecordId" => "1ab23862-46db-4da9-af5b-633adbf5f90f",
         "parsedRecordDtoId" => "1281ae0b-548b-49e3-b740-050f28e6d57f",
         "relatedRecordVersion" => 1,
         "externalId" => "5108040a-65bc-40ed-bd50-265958301ce4",
         "externalHrid" => "in00000000067",
-        "fields" => array_including({"tag" => "245", "content" => "$a title updated by unit test / $c Author Name.", "indicators" => ["1", "0"], "isProtected" => false})})
+        "fields" => array_including({"tag" => "245", "content" => "$a title updated by unit test / $c Author Name.", "indicators" => ["1", "0"], "isProtected" => false})}),
+      anything
     )
   end
 end

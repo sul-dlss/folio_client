@@ -12,7 +12,7 @@ RSpec.describe FolioClient::JobStatus do
     )
   end
   let(:job_execution_id) { "4ba4f4ab" }
-  let(:token) { "a_long_silly_token" }
+  let(:token) { "a temporary dummy token to avoid hitting the API before it is needed" }
   let(:url) { "https://folio.example.org" }
 
   before do

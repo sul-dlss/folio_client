@@ -15,13 +15,21 @@ class FolioClient
     # @return [String,nil] instance HRID if present, otherwise nil.
     def fetch_hrid(barcode:)
       # find the instance UUID for this barcode
-      instance = client.get("/search/instances", {query: "items.barcode==#{barcode}"})
+      response = client.connection.get("/search/instances", {query: "items.barcode==#{barcode}"}, client.http_get_headers)
+
+      UnexpectedResponse.call(response) unless response.success?
+
+      instance = JSON.parse(response.body)
       instance_uuid = instance.dig("instances", 0, "id")
 
       return nil unless instance_uuid
 
       # next lookup the instance given the instance_uuid so we can fetch the hrid
-      result = client.get("/inventory/instances/#{instance_uuid}")
+      response = client.connection.get("/inventory/instances/#{instance_uuid}", {}, client.http_get_headers)
+
+      UnexpectedResponse.call(response) unless response.success?
+
+      result = JSON.parse(response.body)
       result.dig("hrid")
     end
 
@@ -30,7 +38,11 @@ class FolioClient
     # @return [String,nil] instance external ID if present, otherwise nil.
     # @raise [ResourceNotFound, MultipleResourcesFound] if search does not return exactly 1 result
     def fetch_external_id(hrid:)
-      instance_response = client.get("/search/instances", {query: "hrid==#{hrid}"})
+      response = client.connection.get("/search/instances", {query: "hrid==#{hrid}"}, client.http_get_headers)
+
+      UnexpectedResponse.call(response) unless response.success?
+
+      instance_response = JSON.parse(response.body)
       record_count = instance_response["totalRecords"]
       raise ResourceNotFound, "No matching instance found for #{hrid}" if instance_response["totalRecords"] == 0
       raise MultipleResourcesFound, "Expected 1 record for #{hrid}, but found #{record_count}" if record_count > 1
@@ -50,7 +62,11 @@ class FolioClient
       raise ArgumentError, "must pass exactly one of external_id or HRID" if external_id.present? && hrid.present?
 
       external_id ||= fetch_external_id(hrid: hrid)
-      client.get("/inventory/instances/#{external_id}")
+      response = client.connection.get("/inventory/instances/#{external_id}", {}, client.http_get_headers)
+
+      UnexpectedResponse.call(response) unless response.success?
+
+      JSON.parse(response.body)
     end
 
     # @param hrid [String] instance HRID
@@ -59,7 +75,11 @@ class FolioClient
     # @raise [ResourceNotFound] if search by instance HRID returns 0 results
     def has_instance_status?(hrid:, status_id:)
       # get the instance record and its statusId
-      instance = client.get("/inventory/instances", {query: "hrid==#{hrid}"})
+      response = client.connection.get("/inventory/instances", {query: "hrid==#{hrid}"}, client.http_get_headers)
+
+      UnexpectedResponse.call(response) unless response.success?
+
+      instance = JSON.parse(response.body)
       raise ResourceNotFound, "No matching instance found for #{hrid}" if instance["totalRecords"] == 0
 
       instance_status_id = instance.dig("instances", 0, "statusId")

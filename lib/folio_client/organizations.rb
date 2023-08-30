@@ -19,7 +19,9 @@ class FolioClient
     def fetch_list(query: nil, limit: 10000, offset: 0, lang: "en")
       params = {limit: limit, offset: offset, lang: lang}
       params[:query] = query if query
-      client.get("/organizations/organizations", params)
+      response = client.connection.get("/organizations/organizations", params, client.http_get_headers)
+      UnexpectedResponse.call(response) unless response.success?
+      JSON.parse(response.body)
     end
 
     # @param query [String] an optional query to limit the number of organization interfaces returned
@@ -29,15 +31,19 @@ class FolioClient
     def fetch_interface_list(query: nil, limit: 10000, offset: 0, lang: "en")
       params = {limit: limit, offset: offset, lang: lang}
       params[:query] = query if query
-      client.get("/organizations-storage/interfaces", params)
+      response = client.connection.get("/organizations-storage/interfaces", params, client.http_get_headers)
+      UnexpectedResponse.call(response) unless response.success?
+      JSON.parse(response.body)
     end
 
     # @param id [String] id for requested storage interface
     # @param lang [String] language code for returned result (defaults to 'en')
     def fetch_interface_details(id:, lang: "en")
-      client.get("/organizations-storage/interfaces/#{id}", {
+      response = client.connection.get("/organizations-storage/interfaces/#{id}", {
         lang: lang
-      })
+      }, client.http_get_headers)
+      UnexpectedResponse.call(response) unless response.success?
+      JSON.parse(response.body)
     end
   end
 end

@@ -6,7 +6,7 @@ RSpec.describe FolioClient::DataImport do
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
-  let(:token) { "a_long_silly_token" }
+  let(:token) { "a temporary dummy token to avoid hitting the API before it is needed" }
   let(:client) { FolioClient.configure(**args) }
 
   before do
@@ -102,7 +102,7 @@ RSpec.describe FolioClient::DataImport do
           body: upload_definition_request_body.to_json,
           headers: {
             "Content-Type" => "application/json",
-            "X-Okapi-Token" => "a_long_silly_token"
+            "X-Okapi-Token" => token
           }
         ).to_return(status: 200,
           body: upload_definition_response_body.to_json,
@@ -113,7 +113,7 @@ RSpec.describe FolioClient::DataImport do
           body: "00098     2200037   4500245006000000\u001E0 \u001FaFolio 21: a bibliography of the Folio Society 1947-1967\u001E\u001D",
           headers: {
             "Content-Type" => "application/octet-stream",
-            "X-Okapi-Token" => "a_long_silly_token"
+            "X-Okapi-Token" => token
           }
         )
         .to_return(status: 200, body: upload_file_response_body.to_json, headers: {})
@@ -123,7 +123,7 @@ RSpec.describe FolioClient::DataImport do
           body: process_request_body.to_json,
           headers: {
             "Content-Type" => "application/json",
-            "X-Okapi-Token" => "a_long_silly_token"
+            "X-Okapi-Token" => token
           }
         )
         .to_return(status: 204, body: "", headers: {})
@@ -148,7 +148,7 @@ RSpec.describe FolioClient::DataImport do
         .with(
           headers: {
             "Content-Type" => "application/json",
-            "X-Okapi-Token" => "a_long_silly_token"
+            "X-Okapi-Token" => token
           }
         )
         .to_return(status: 200, body: job_profiles_body, headers: {})

@@ -49,24 +49,31 @@ class FolioClient
     # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
     def configure(url:, login_params:, okapi_headers:, timeout: default_timeout)
       instance.config = OpenStruct.new(
+        # For the initial token, use a dummy value to avoid hitting any APIs
+        # during configuration, allowing the `TokenWrapper` to handle auto-magic
+        # token refreshing. Why not immediately get a valid token? Our apps
+        # commonly invoke client `.configure` methods in the initializer in all
+        # application environments, even those that are never expected to
+        # connect to production APIs, such as local development machines.
+        #
+        # NOTE: `nil` and blank string cannot be used as dummy values here as
+        # they lead to a malformed request to be sent, which triggers an
+        # exception not rescued by `TokenWrapper`
+        token: "a temporary dummy token to avoid hitting the API before it is needed",
         url: url,
         login_params: login_params,
         okapi_headers: okapi_headers,
         timeout: timeout
       )
 
-      # NOTE: The token cannot be set above, since `#connection` relies on
-      #       `instance.config` parameters having already been set.
-      instance.config.token = Authenticator.token(login_params, connection)
-
       self
     end
 
-    delegate :config, :connection, :data_import, :default_timeout, :edit_marc_json,
-      :fetch_external_id, :fetch_hrid, :fetch_instance_info, :fetch_marc_hash, :get,
-      :has_instance_status?, :interface_details, :job_profiles, :organization_interfaces,
-      :organizations, :post, :put, to: :instance
-  end
+    delegate :config, :connection, :data_import, :default_timeout,
+      :edit_marc_json, :fetch_external_id, :fetch_hrid, :fetch_instance_info,
+      :fetch_marc_hash, :get, :has_instance_status?, :http_get_headers,
+      :http_post_and_put_headers, :interface_details, :job_profiles,
+      :organization_interfaces, :organizations, :post, :put, to: :instance end
 
   attr_accessor :config
 
@@ -75,7 +82,7 @@ class FolioClient
   # @param params [Hash] params to get to the API
   def get(path, params = {})
     response = TokenWrapper.refresh(config, connection) do
-      connection.get(path, params, {"x-okapi-token": config.token})
+      connection.get(path, params, http_get_headers)
     end
 
     UnexpectedResponse.call(response) unless response.success?
@@ -92,11 +99,7 @@ class FolioClient
   def post(path, body = nil, content_type: "application/json")
     req_body = (content_type == "application/json") ? body&.to_json : body
     response = TokenWrapper.refresh(config, connection) do
-      req_headers = {
-        "x-okapi-token": config.token,
-        "content-type": content_type
-      }
-      connection.post(path, req_body, req_headers)
+      connection.post(path, req_body, http_post_and_put_headers(content_type: content_type))
     end
 
     UnexpectedResponse.call(response) unless response.success?
@@ -113,11 +116,7 @@ class FolioClient
   def put(path, body = nil, content_type: "application/json")
     req_body = (content_type == "application/json") ? body&.to_json : body
     response = TokenWrapper.refresh(config, connection) do
-      req_headers = {
-        "x-okapi-token": config.token,
-        "content-type": content_type
-      }
-      connection.put(path, req_body, req_headers)
+      connection.put(path, req_body, http_post_and_put_headers(content_type: content_type))
     end
 
     UnexpectedResponse.call(response) unless response.success?
@@ -140,82 +139,115 @@ class FolioClient
 
   # @see Inventory#fetch_hrid
   def fetch_hrid(...)
-    Inventory
-      .new(self)
-      .fetch_hrid(...)
+    TokenWrapper.refresh(config, connection) do
+      Inventory
+        .new(self)
+        .fetch_hrid(...)
+    end
   end
 
   # @see Inventory#fetch_external_id
   def fetch_external_id(...)
-    Inventory
-      .new(self)
-      .fetch_external_id(...)
+    TokenWrapper.refresh(config, connection) do
+      Inventory
+        .new(self)
+        .fetch_external_id(...)
+    end
   end
 
   # @see Inventory#fetch_instance_info
   def fetch_instance_info(...)
-    Inventory
-      .new(self)
-      .fetch_instance_info(...)
+    TokenWrapper.refresh(config, connection) do
+      Inventory
+        .new(self)
+        .fetch_instance_info(...)
+    end
   end
 
   # @see SourceStorage#fetch_marc_hash
   def fetch_marc_hash(...)
-    SourceStorage
-      .new(self)
-      .fetch_marc_hash(...)
+    TokenWrapper.refresh(config, connection) do
+      SourceStorage
+        .new(self)
+        .fetch_marc_hash(...)
+    end
   end
 
   # @see Inventory#has_instance_status?
   def has_instance_status?(...)
-    Inventory
-      .new(self)
-      .has_instance_status?(...)
+    TokenWrapper.refresh(config, connection) do
+      Inventory
+        .new(self)
+        .has_instance_status?(...)
+    end
   end
 
   # @ see DataImport#import
   def data_import(...)
-    DataImport
-      .new(self)
-      .import(...)
+    TokenWrapper.refresh(config, connection) do
+      DataImport
+        .new(self)
+        .import(...)
+    end
   end
 
   # @ see DataImport#job_profiles
   def job_profiles(...)
-    DataImport
-      .new(self)
-      .job_profiles(...)
+    TokenWrapper.refresh(config, connection) do
+      DataImport
+        .new(self)
+        .job_profiles(...)
+    end
   end
 
   # @see RecordsEditor#edit_marc_json
   def edit_marc_json(...)
-    RecordsEditor
-      .new(self)
-      .edit_marc_json(...)
+    TokenWrapper.refresh(config, connection) do
+      RecordsEditor
+        .new(self)
+        .edit_marc_json(...)
+    end
   end
 
   # @see Organizations#fetch_list
   def organizations(...)
-    Organizations
-      .new(self)
-      .fetch_list(...)
+    TokenWrapper.refresh(config, connection) do
+      Organizations
+        .new(self)
+        .fetch_list(...)
+    end
   end
 
   # @see Organizations#fetch_interface_list
   def organization_interfaces(...)
-    Organizations
-      .new(self)
-      .fetch_interface_list(...)
+    TokenWrapper.refresh(config, connection) do
+      Organizations
+        .new(self)
+        .fetch_interface_list(...)
+    end
   end
 
   # @see Organizations#fetch_interface_details
   def interface_details(...)
-    Organizations
-      .new(self)
-      .fetch_interface_details(...)
+    TokenWrapper.refresh(config, connection) do
+      Organizations
+        .new(self)
+        .fetch_interface_details(...)
+    end
   end
 
   def default_timeout
     120
+  end
+
+  def http_get_headers
+    {"x-okapi-token": config.token}
+  end
+
+  def http_post_and_put_headers(content_type: "application/json")
+    {
+      "x-okapi-token": config.token,
+      "content-type": content_type
+    }
   end
 end

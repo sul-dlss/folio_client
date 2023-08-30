@@ -19,18 +19,24 @@ class FolioClient
     # @param job_profile_name [String] job profile name to use for import
     # @return [JobStatus] a job status instance to get information about the data import job
     def import(records:, job_profile_id:, job_profile_name:)
-      response_hash = client.post("/data-import/uploadDefinitions", {fileDefinitions: [{name: marc_filename}]})
+      response = client.connection.post("/data-import/uploadDefinitions", {fileDefinitions: [{name: marc_filename}]}.to_json, client.http_post_and_put_headers)
+
+      UnexpectedResponse.call(response) unless response.success?
+
+      response_hash = JSON.parse(response.body)
       upload_definition_id = response_hash.dig("fileDefinitions", 0, "uploadDefinitionId")
       job_execution_id = response_hash.dig("fileDefinitions", 0, "jobExecutionId")
       file_definition_id = response_hash.dig("fileDefinitions", 0, "id")
 
-      upload_file_response_hash = client.post(
+      upload_file_response = client.connection.post(
         "/data-import/uploadDefinitions/#{upload_definition_id}/files/#{file_definition_id}",
         marc_binary(records),
-        content_type: "application/octet-stream"
+        client.http_post_and_put_headers(content_type: "application/octet-stream")
       )
+      UnexpectedResponse.call(upload_file_response) unless upload_file_response.success?
+      upload_file_response_hash = JSON.parse(upload_file_response.body)
 
-      client.post(
+      process_files_response = client.connection.post(
         "/data-import/uploadDefinitions/#{upload_definition_id}/processFiles",
         {
           uploadDefinition: upload_file_response_hash,
@@ -39,16 +45,23 @@ class FolioClient
             name: job_profile_name,
             dataType: "MARC"
           }
-        }
+        }.to_json,
+        client.http_post_and_put_headers
       )
+      UnexpectedResponse.call(process_files_response) unless process_files_response.success?
 
       JobStatus.new(client, job_execution_id: job_execution_id)
     end
 
     # @return [Array<Hash<String,String>>] a list of job profile hashes
     def job_profiles
-      client
-        .get("/data-import-profiles/jobProfiles")
+      response = client
+        .connection
+        .get("/data-import-profiles/jobProfiles", {}, client.http_get_headers)
+
+      UnexpectedResponse.call(response) unless response.success?
+
+      JSON.parse(response.body)
         .fetch("jobProfiles", [])
         .map { |profile| profile.slice(*JOB_PROFILE_ATTRIBUTES) }
     end

@@ -16,7 +16,9 @@ class FolioClient
     # @raise [ResourceNotFound]
     # @raise [MultipleResourcesFound]
     def fetch_marc_hash(instance_hrid:)
-      response_hash = client.get("/source-storage/source-records", {instanceHrid: instance_hrid})
+      response = client.connection.get("/source-storage/source-records", {instanceHrid: instance_hrid}, client.http_get_headers)
+      UnexpectedResponse.call(response) unless response.success?
+      response_hash = JSON.parse(response.body)
 
       record_count = response_hash["totalRecords"]
       raise ResourceNotFound, "No records found for #{instance_hrid}" if record_count.zero?

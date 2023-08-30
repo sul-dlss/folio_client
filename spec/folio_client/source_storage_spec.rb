@@ -7,10 +7,9 @@ RSpec.describe FolioClient::SourceStorage do
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
-  let(:token) { "aLongSTring.eNCodinga.JwTeeeee" }
+  let(:token) { "a temporary dummy token to avoid hitting the API before it is needed" }
   let(:client) { FolioClient.configure(**args) }
   let(:instance_hrid) { "a666" }
-
   let(:post_authn_request_headers) {
     {
       "Accept" => "application/json, text/plain",

@@ -25,7 +25,11 @@ class FolioClient
     #                               Failure(:pending) if job is still running,
     #                               Failure(:not_found) if job is not found
     def status
-      response_hash = client.get("/change-manager/jobExecutions/#{job_execution_id}")
+      response = client.connection.get("/change-manager/jobExecutions/#{job_execution_id}", {}, client.http_get_headers)
+
+      UnexpectedResponse.call(response) unless response.success?
+
+      response_hash = JSON.parse(response.body)
 
       return Failure(:pending) if !["COMMITTED", "ERROR"].include?(response_hash["status"])
 
@@ -45,12 +49,17 @@ class FolioClient
 
       @instance_hrids ||= wait_with_timeout do
         response = client
-          .get("/metadata-provider/journalRecords/#{job_execution_id}")
+          .connection
+          .get("/metadata-provider/journalRecords/#{job_execution_id}", {}, client.http_get_headers)
+
+        UnexpectedResponse.call(response) unless response.success?
+
+        ids = JSON.parse(response.body)
           .fetch("journalRecords", [])
           .select { |journal_record| journal_record["entityType"] == "INSTANCE" && journal_record["actionStatus"] == "COMPLETED" }
           .filter_map { |instance_record| instance_record["entityHrId"] }
 
-        response.empty? ? Failure() : Success(response)
+        ids.empty? ? Failure() : Success(ids)
       end
     end
 

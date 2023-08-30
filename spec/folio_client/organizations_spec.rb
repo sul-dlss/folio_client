@@ -9,7 +9,7 @@ RSpec.describe FolioClient::Organizations do
   let(:url) { "https://folio.example.org" }
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
-  let(:token) { "a_long_silly_token" }
+  let(:token) { "a temporary dummy token to avoid hitting the API before it is needed" }
   let(:client) { FolioClient.configure(**args) }
   let(:id) { "some_long_id_that_is_long" }
   let(:query) { '"active=="true"' }
