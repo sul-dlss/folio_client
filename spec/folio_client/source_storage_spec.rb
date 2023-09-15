@@ -11,6 +11,17 @@ RSpec.describe FolioClient::SourceStorage do
   let(:client) { FolioClient.configure(**args) }
   let(:instance_hrid) { "a666" }
 
+  let(:search_instance_response) {
+    {"totalRecords" => 1,
+     "instances" => [
+       {"id" => "some_long_uuid_that_is_long",
+        "title" => "Training videos",
+        "contributors" => [{"name" => "Person"}],
+        "isBoundWith" => false,
+        "holdings" => []}
+     ]}
+  }
+
   let(:post_authn_request_headers) {
     {
       "Accept" => "application/json, text/plain",
@@ -21,8 +32,15 @@ RSpec.describe FolioClient::SourceStorage do
   }
 
   before do
+    # the client is initialized with a fake token (see comment in FolioClient.configure for why).  this
+    # simulates the initial obtainment of a valid token after FolioClient makes the very first post-initialization request.
+    stub_request(:get, "#{url}/search/instances?query=hrid==in808")
+      .to_return({status: 401}, {status: 200, body: search_instance_response.to_json})
     stub_request(:post, "#{url}/authn/login")
       .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
+
+    client.fetch_external_id(hrid: "in808")
+
     stub_request(:get, "#{url}/source-storage/source-records?instanceHrid=#{instance_hrid}")
       .with(headers: post_authn_request_headers)
       .to_return(status: 200, body: source_storage_response.to_json)

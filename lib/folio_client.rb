@@ -47,25 +47,34 @@ class FolioClient
     # @param url [String] the folio API URL
     # @param login_params [Hash] the folio client login params (username:, password:)
     # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
+    # @return [FolioClient] the configured Singleton class
     def configure(url:, login_params:, okapi_headers:, timeout: default_timeout)
       instance.config = OpenStruct.new(
+        # For the initial token, use a dummy value to avoid hitting any APIs
+        # during configuration, allowing the `TokenWrapper` to handle auto-magic
+        # token refreshing. Why not immediately get a valid token? Our apps
+        # commonly invoke client `.configure` methods in the initializer in all
+        # application environments, even those that are never expected to
+        # connect to production APIs, such as local development machines.
+        #
+        # NOTE: `nil` and blank string cannot be used as dummy values here as
+        # they lead to a malformed request to be sent, which triggers an
+        # exception not rescued by `TokenWrapper`
+        token: "a temporary dummy token to avoid hitting the API before it is needed",
         url: url,
         login_params: login_params,
         okapi_headers: okapi_headers,
         timeout: timeout
       )
 
-      # NOTE: The token cannot be set above, since `#connection` relies on
-      #       `instance.config` parameters having already been set.
-      instance.config.token = Authenticator.token(login_params, connection)
-
       self
     end
 
-    delegate :config, :connection, :data_import, :default_timeout, :edit_marc_json,
-      :fetch_external_id, :fetch_hrid, :fetch_instance_info, :fetch_marc_hash, :get,
-      :has_instance_status?, :interface_details, :job_profiles, :organization_interfaces,
-      :organizations, :post, :put, to: :instance
+    delegate :config, :connection, :data_import, :default_timeout,
+      :edit_marc_json, :fetch_external_id, :fetch_hrid, :fetch_instance_info,
+      :fetch_marc_hash, :get, :has_instance_status?, :http_get_headers,
+      :http_post_and_put_headers, :interface_details, :job_profiles,
+      :organization_interfaces, :organizations, :post, :put, to: :instance
   end
 
   attr_accessor :config
