@@ -244,11 +244,13 @@ class FolioClient
   # expiry to fall in the middle of that related set of HTTP calls).
   def with_token_refresh_when_unauthorized
     response = yield
-    UnexpectedResponse.call(response) unless response.success?
+
+    # if unauthorized, token has likely expired. try to get a new token and then retry the same request(s).
+    if response.status == 401
+      config.token = Authenticator.token(config.login_params, connection)
+      response = yield
+    end
 
     response
-  rescue UnauthorizedError
-    config.token = Authenticator.token(config.login_params, connection)
-    yield
   end
 end
