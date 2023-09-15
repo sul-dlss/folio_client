@@ -14,10 +14,27 @@ RSpec.describe FolioClient::JobStatus do
   let(:job_execution_id) { "4ba4f4ab" }
   let(:token) { "a_long_silly_token" }
   let(:url) { "https://folio.example.org" }
+  let(:search_instance_response) {
+    {"totalRecords" => 1,
+     "instances" => [
+       {"id" => "some_long_uuid_that_is_long",
+        "title" => "Training videos",
+        "contributors" => [{"name" => "Person"}],
+        "isBoundWith" => false,
+        "holdings" => []}
+     ]}
+  }
 
   before do
+    # the client is initialized with a fake token (see comment in FolioClient.configure for why).  this
+    # simulates the initial obtainment of a valid token after FolioClient makes the very first post-initialization request.
+    stub_request(:get, "#{url}/search/instances?query=hrid==in808")
+      .to_return({status: 401}, {status: 200, body: search_instance_response.to_json})
     stub_request(:post, "#{url}/authn/login")
       .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
+
+    client.fetch_external_id(hrid: "in808")
+
     allow(DateTime).to receive(:now).and_return(DateTime.parse("2023-03-01T11:17:25-05:00"))
   end
 

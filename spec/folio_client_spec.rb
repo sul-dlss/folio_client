@@ -12,10 +12,26 @@ RSpec.describe FolioClient do
   let(:login_params) { {username: "username", password: "password"} }
   let(:okapi_headers) { {some_bogus_headers: "here"} }
   let(:token) { "a_long_silly_token" }
+  let(:search_instance_response) {
+    {"totalRecords" => 1,
+     "instances" => [
+       {"id" => "some_long_uuid_that_is_long",
+        "title" => "Training videos",
+        "contributors" => [{"name" => "Person"}],
+        "isBoundWith" => false,
+        "holdings" => []}
+     ]}
+  }
 
   before do
+    # the client is initialized with a fake token (see comment in FolioClient.configure for why).  this
+    # simulates the initial obtainment of a valid token after FolioClient makes the very first post-initialization request.
+    stub_request(:get, "#{url}/search/instances?query=hrid==in808")
+      .to_return({status: 401}, {status: 200, body: search_instance_response.to_json})
     stub_request(:post, "#{url}/authn/login")
       .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
+
+    client.fetch_external_id(hrid: "in808")
   end
 
   it "has a version number" do
@@ -39,6 +55,10 @@ RSpec.describe FolioClient do
 
     it "stores the fetched token in the config" do
       expect(client.config.token).to eq(token)
+    end
+
+    it "returns the singleton class" do
+      expect(client).to be described_class
     end
   end
 
@@ -472,7 +492,7 @@ RSpec.describe FolioClient do
   context "when token is expired" do
     let(:inventory) { instance_double(FolioClient::Inventory, fetch_hrid: nil) }
     let(:hrid) { "in56789" }
-    let(:expired_token) { "expired_token" }
+    let(:expired_token) { token }
     let(:new_token) { "new_token" }
     let(:barcode) { "123456" }
     let(:instance_uuid) { "d71e654b-ca5e-44c0-9621-ae86ffd528d3" }
@@ -506,7 +526,6 @@ RSpec.describe FolioClient do
     before do
       stub_request(:post, "#{url}/authn/login")
         .to_return(
-          {status: 200, body: "{\"okapiToken\" : \"#{expired_token}\"}"},
           {status: 200, body: "{\"okapiToken\" : \"#{new_token}\"}"}
         )
       stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
