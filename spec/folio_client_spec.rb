@@ -488,7 +488,8 @@ RSpec.describe FolioClient do
     end
   end
 
-  # Tests the TokenWrapper that requests a new token, with a method that might first encounter the error
+  # Tests that we request a new token and then retry the same HTTP call, if the HTTP call
+  # returns an unauthorized error
   context "when token is expired" do
     let(:inventory) { instance_double(FolioClient::Inventory, fetch_hrid: nil) }
     let(:hrid) { "in56789" }
