@@ -3,8 +3,9 @@
 require "active_support/core_ext/module/delegation"
 require "active_support/core_ext/object/blank"
 require "faraday"
-require "singleton"
+require "marc"
 require "ostruct"
+require "singleton"
 require "zeitwerk"
 
 # Load the gem's internal dependencies: use Zeitwerk instead of needing to manually require classes
@@ -72,10 +73,10 @@ class FolioClient
 
     delegate :config, :connection, :data_import, :default_timeout,
       :edit_marc_json, :fetch_external_id, :fetch_hrid, :fetch_instance_info,
-      :fetch_marc_hash, :get, :has_instance_status?, :http_get_headers,
-      :http_post_and_put_headers, :interface_details, :job_profiles,
-      :organization_interfaces, :organizations, :post, :put, to: :instance
-  end
+      :fetch_marc_hash, :fetch_marc_xml, :get, :has_instance_status?,
+      :http_get_headers, :http_post_and_put_headers, :interface_details,
+      :job_profiles, :organization_interfaces, :organizations, :post, :put, to:
+      :instance end
 
   attr_accessor :config
 
@@ -173,6 +174,13 @@ class FolioClient
     SourceStorage
       .new(self)
       .fetch_marc_hash(...)
+  end
+
+  # @see SourceStorage#fetch_marc_xml
+  def fetch_marc_xml(...)
+    SourceStorage
+      .new(self)
+      .fetch_marc_xml(...)
   end
 
   # @see Inventory#has_instance_status?

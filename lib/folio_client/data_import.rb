@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "date"
-require "marc"
 require "stringio"
 
 class FolioClient

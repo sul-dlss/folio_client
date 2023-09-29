@@ -3,6 +3,8 @@
 class FolioClient
   # Lookup records in Folio Source Storage
   class SourceStorage
+    FIELDS_TO_REMOVE = %w[001 003].freeze
+
     attr_accessor :client
 
     # @param client [FolioClient] the configured client
@@ -23,6 +25,37 @@ class FolioClient
       raise MultipleResourcesFound, "Expected 1 record for #{instance_hrid}, but found #{record_count}" if record_count > 1
 
       response_hash["sourceRecords"].first["parsedRecord"]["content"]
+    end
+
+    # get marc bib data as MARCXML from folio given an instance HRID
+    # @param instance_hrid [String] the instance HRID to use for MARC lookup
+    # @param barcode [String] the barcode to use for MARC lookup
+    # @return [String] MARCXML string
+    # @raise [ResourceNotFound]
+    # @raise [MultipleResourcesFound]
+    def fetch_marc_xml(instance_hrid: nil, barcode: nil)
+      raise ArgumentError, "Either a barcode or a Folio instance HRID must be provided" if barcode.nil? && instance_hrid.nil?
+
+      instance_hrid ||= client.fetch_hrid(barcode: barcode)
+
+      raise ResourceNotFound, "Catalog record not found. HRID: #{instance_hrid} | Barcode: #{barcode}" if instance_hrid.blank?
+
+      marc_record = MARC::Record.new_from_hash(
+        fetch_marc_hash(instance_hrid: instance_hrid)
+      )
+      updated_marc = MARC::Record.new
+      updated_marc.leader = marc_record.leader
+      marc_record.fields.each do |field|
+        # explicitly remove all listed tags from the record
+        next if FIELDS_TO_REMOVE.include?(field.tag)
+
+        updated_marc.fields << field
+      end
+      # explicitly inject the instance_hrid into the 001 field
+      updated_marc.fields << MARC::ControlField.new("001", instance_hrid)
+      # explicitly inject FOLIO into the 003 field
+      updated_marc.fields << MARC::ControlField.new("003", "FOLIO")
+      updated_marc.to_xml.to_s
     end
   end
 end
