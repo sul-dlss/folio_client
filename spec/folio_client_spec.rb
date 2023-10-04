@@ -324,6 +324,34 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe ".fetch_marc_xml" do
+    let(:instance_hrid) { "a12854819" }
+
+    before do
+      allow(described_class.instance).to receive(:fetch_marc_xml).with(instance_hrid: instance_hrid)
+    end
+
+    it "invokes instance#fetch_marc_xml" do
+      client.fetch_marc_xml(instance_hrid: instance_hrid)
+      expect(client.instance).to have_received(:fetch_marc_xml).with(instance_hrid: instance_hrid)
+    end
+  end
+
+  describe "#fetch_marc_xml" do
+    let(:instance_hrid) { "123456" }
+    let(:source_storage) { instance_double(described_class::SourceStorage) }
+
+    before do
+      allow(described_class::SourceStorage).to receive(:new).and_return(source_storage)
+      allow(source_storage).to receive(:fetch_marc_xml)
+    end
+
+    it "invokes SourceStorage#fetch_marc_xml" do
+      client.fetch_marc_xml(instance_hrid: instance_hrid)
+      expect(source_storage).to have_received(:fetch_marc_xml).once
+    end
+  end
+
   describe ".data_import" do
     let(:job_profile_id) { "4ba4f4ab" }
     let(:job_profile_name) { "ETDs" }

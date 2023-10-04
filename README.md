@@ -131,6 +131,22 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+## Integration Testing
+
+To test that the gem works against the Folio APIs, run `api_test.rb` via:
+
+```shell
+# NOTE: This is bash syntax, YMMV
+$ export OKAPI_PASSWORD=$(vault kv get --field=content puppet/application/folio/stage/app_sdr_password)
+$ export OKAPI_TENANT=sul
+$ export OKAPI_USER=app_sdr
+$ export OKAPI_URL=https://okapi-stage.stanford.edu
+# NOTE: The args below are a list of MARC files
+$ bundle exec ruby ./api_test.rb /path/to/marc/files/test.mrc /another/marc/file/at/foobar.marc
+```
+
+Inspect the output and make sure there are no errors.
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/sul-dlss/folio_client.
