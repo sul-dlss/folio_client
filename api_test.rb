@@ -23,6 +23,8 @@ pp(client.fetch_marc_hash(instance_hrid: "a666"))
 puts client.fetch_marc_xml(instance_hrid: "a666")
 puts client.fetch_marc_xml(barcode: "20503330279")
 
+puts client.users(query: 'username=="pet*"')
+
 records = marc_files.flat_map do |marc_file_path|
   MARC::Reader.new(marc_file_path).to_a
 end

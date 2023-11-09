@@ -123,6 +123,17 @@ client.interface_details(id: 'c6f7470e-6229-45ce-b3f9-32006e9affcf')
     "createdByUserId"=>"38524916-598d-4edf-a2ef-04bba7e78ad6",
     "updatedDate"=>"2023-02-16T22:27:51.515+00:00",
     "updatedByUserId"=>"38524916-598d-4edf-a2ef-04bba7e78ad6"}}
+
+# Get list of users (filtered with an optional query)
+# see https://s3.amazonaws.com/foliodocs/api/mod-users/r/users.html#users_get
+client.users(query: 'username=="a*"')
+=> {"users"=>[....
+
+# Get specific user info
+# see https://s3.amazonaws.com/foliodocs/api/mod-users/r/users.html#users_get
+client.user_details(id: 'g07a11f2-47a6-471d-8c80-94d2bb1456fd')
+=> {"username"=>"somebody",
+    "id"=>"g07a11f2-47a6-471d-8c80-94d2bb1456fd", ....
 ```
 
 ## Development

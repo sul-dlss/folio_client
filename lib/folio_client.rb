@@ -75,7 +75,8 @@ class FolioClient
       :edit_marc_json, :fetch_external_id, :fetch_hrid, :fetch_instance_info,
       :fetch_marc_hash, :fetch_marc_xml, :get, :has_instance_status?,
       :http_get_headers, :http_post_and_put_headers, :interface_details,
-      :job_profiles, :organization_interfaces, :organizations, :post, :put, to:
+      :job_profiles, :organization_interfaces, :organizations, :users, :user_details,
+      :post, :put, to:
       :instance end
 
   attr_accessor :config
@@ -230,6 +231,20 @@ class FolioClient
     Organizations
       .new(self)
       .fetch_interface_details(...)
+  end
+
+  # @see Users#fetch_list
+  def users(...)
+    Users
+      .new(self)
+      .fetch_list(...)
+  end
+
+  # @see Users#fetch_user_details
+  def user_details(...)
+    Users
+      .new(self)
+      .fetch_user_details(...)
   end
 
   def default_timeout
