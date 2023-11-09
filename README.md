@@ -123,6 +123,47 @@ client.interface_details(id: 'c6f7470e-6229-45ce-b3f9-32006e9affcf')
     "createdByUserId"=>"38524916-598d-4edf-a2ef-04bba7e78ad6",
     "updatedDate"=>"2023-02-16T22:27:51.515+00:00",
     "updatedByUserId"=>"38524916-598d-4edf-a2ef-04bba7e78ad6"}}
+
+# Get list of users (filtered with an optional query)
+# see https://s3.amazonaws.com/foliodocs/api/mod-users/r/users.html#users_get
+client.users(query: 'username=="test*"')
+=> {"users"=>
+  [{"username"=>"testing",
+    "id"=>"bbbadd51-c2f1-4107-a54d-52b39087725c",
+    "externalSystemId"=>"00324439",
+    "barcode"=>"2559202566",
+    "active"=>false,
+    "departments"=>[],
+    "proxyFor"=>[],
+    "personal"=>
+     {"lastName"=>"Testing",
+      "firstName"=>"Test",
+      "email"=>"foliotesting@lists.stanford.edu",
+      "addresses"=>
+       [{"countryId"=>"US",
+         "addressLine1"=>"13 Fake St",
+         "city"=>"Palo Alto",
+         "region"=>"California",
+         "postalCode"=>"94301",
+         "addressTypeId"=>"93d3d88d-499b-45d0-9bc7-ac73c3a19880",
+         "primaryAddress"=>true}]},
+    "createdDate"=>"2023-10-01T08:50:37.203+00:00",
+    "updatedDate"=>"2023-10-01T08:50:37.203+00:00",
+    "metadata"=>
+     {"createdDate"=>"2023-09-02T02:51:43.448+00:00",
+      "createdByUserId"=>"58d0aaf6-dcda-4d5e-92da-012e6b7dd766",
+      "updatedDate"=>"2023-10-01T08:50:37.196+00:00",
+      "updatedByUserId"=>"58d0aaf6-dcda-4d5e-92da-012e6b7dd766"},
+    "customFields"=>{"affiliation"=>"affiliate:sponsored"}}],
+ "totalRecords"=>1,
+ "resultInfo"=>{"totalRecords"=>1, "facets"=>[], "diagnostics"=>[]}}
+
+# Get specific user info
+# see https://s3.amazonaws.com/foliodocs/api/mod-users/r/users.html#users_get
+client.user_details(id: 'bbbadd51-c2f1-4107-a54d-52b39087725c')
+=> {"username"=>"testing",
+    "id"=>"bbbadd51-c2f1-4107-a54d-52b39087725c",
+    "externalSystemId"=>"00324439", ... # same response as above, but for single user
 ```
 
 ## Development

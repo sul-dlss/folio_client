@@ -116,7 +116,7 @@ RSpec.describe FolioClient::Organizations do
           "updatedByUserId" => "38524916-598d-4edf-a2ef-04bba7e78ad6"}}
     }
 
-    it "returns the organization list" do
+    it "returns the organization interface details" do
       expect(organizations.fetch_interface_details(id: id)).to eq(organization_interface_detail_response)
     end
   end

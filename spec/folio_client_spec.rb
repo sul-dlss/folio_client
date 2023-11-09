@@ -516,6 +516,56 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe ".users" do
+    before do
+      allow(described_class.instance).to receive(:users)
+    end
+
+    it "invokes instance#users" do
+      client.users
+      expect(client.instance).to have_received(:users)
+    end
+  end
+
+  describe "#users" do
+    let(:users) { instance_double(described_class::Users) }
+
+    before do
+      allow(described_class::Users).to receive(:new).and_return(users)
+      allow(users).to receive(:fetch_list)
+    end
+
+    it "invokes Users#fetch_list" do
+      client.public_send(:users)
+      expect(users).to have_received(:fetch_list).once
+    end
+  end
+
+  describe ".user_details" do
+    before do
+      allow(described_class.instance).to receive(:user_details).with(id: "something")
+    end
+
+    it "invokes instance#user_details" do
+      client.user_details(id: "something")
+      expect(client.instance).to have_received(:user_details).with(id: "something")
+    end
+  end
+
+  describe "#user_details" do
+    let(:users) { instance_double(described_class::Users) }
+
+    before do
+      allow(described_class::Users).to receive(:new).and_return(users)
+      allow(users).to receive(:fetch_user_details).with(id: "something")
+    end
+
+    it "invokes Users#fetch_user_details" do
+      client.public_send(:user_details, id: "something")
+      expect(users).to have_received(:fetch_user_details).with(id: "something").once
+    end
+  end
+
   # Tests that we request a new token and then retry the same HTTP call, if the HTTP call
   # returns an unauthorized error
   context "when token is expired" do
