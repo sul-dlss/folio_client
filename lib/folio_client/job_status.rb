@@ -35,8 +35,8 @@ class FolioClient
       Failure(:not_found)
     end
 
-    def wait_until_complete(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs)
-      wait_with_timeout(wait_secs: wait_secs, timeout_secs: timeout_secs) { status }
+    def wait_until_complete(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs, max_checks: default_max_checks)
+      wait_with_timeout(wait_secs: wait_secs, timeout_secs: timeout_secs, max_checks: max_checks) { status }
     end
 
     def instance_hrids
@@ -66,13 +66,18 @@ class FolioClient
       10 * 60
     end
 
-    def wait_with_timeout(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs)
+    def default_max_checks
+      # arbitrary best guess at number of times to check for job status before erroring
+      10
+    end
+
+    def wait_with_timeout(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs, max_checks: default_max_checks)
       Timeout.timeout(timeout_secs) do
         loop.with_index do |_, i|
           result = yield
 
           # If a 404, wait a bit longer before raising an error.
-          check_not_found(result, i)
+          check_not_found(result, i, max_checks)
           return result if done_waiting?(result)
 
           sleep(wait_secs)
@@ -86,10 +91,10 @@ class FolioClient
       result.success? || (result.failure? && result.failure == :error)
     end
 
-    def check_not_found(result, index)
-      return unless result.failure? && result.failure == :not_found && index > 2
+    def check_not_found(result, index, max_checks)
+      return unless result.failure? && result.failure == :not_found && index > max_checks
 
-      raise ResourceNotFound, "Job #{job_execution_id} not found after #{index} retries"
+      raise ResourceNotFound, "Job #{job_execution_id} not found after #{index} retries. The data import job may still have completed."
     end
   end
 end
