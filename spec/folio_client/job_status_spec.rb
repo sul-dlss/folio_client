@@ -135,8 +135,8 @@ RSpec.describe FolioClient::JobStatus do
       end
 
       it "raises ResourceNotFound" do
-        expect { job_status.wait_until_complete(wait_secs: 0.1) }.to raise_error(FolioClient::ResourceNotFound)
-        expect(job_status).to have_received(:status).exactly(4).times
+        expect { job_status.wait_until_complete(wait_secs: 0.1, max_checks: 3) }.to raise_error(FolioClient::ResourceNotFound)
+        expect(job_status).to have_received(:status).exactly(5).times
       end
     end
 
