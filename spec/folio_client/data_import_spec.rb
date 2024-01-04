@@ -2,102 +2,103 @@
 
 RSpec.describe FolioClient::DataImport do
   let(:data_import) { described_class.new(client) }
-  let(:args) { {url: url, login_params: login_params, okapi_headers: okapi_headers} }
-  let(:url) { "https://folio.example.org" }
-  let(:login_params) { {username: "username", password: "password"} }
-  let(:okapi_headers) { {some_bogus_headers: "here"} }
-  let(:token) { "a_long_silly_token" }
+  let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
+  let(:url) { 'https://folio.example.org' }
+  let(:login_params) { { username: 'username', password: 'password' } }
+  let(:okapi_headers) { { some_bogus_headers: 'here' } }
+  let(:token) { 'a_long_silly_token' }
   let(:client) { FolioClient.configure(**args) }
-  let(:search_instance_response) {
-    {"totalRecords" => 1,
-     "instances" => [
-       {"id" => "some_long_uuid_that_is_long",
-        "title" => "Training videos",
-        "contributors" => [{"name" => "Person"}],
-        "isBoundWith" => false,
-        "holdings" => []}
-     ]}
-  }
+  let(:search_instance_response) do
+    { 'totalRecords' => 1,
+      'instances' => [
+        { 'id' => 'some_long_uuid_that_is_long',
+          'title' => 'Training videos',
+          'contributors' => [{ 'name' => 'Person' }],
+          'isBoundWith' => false,
+          'holdings' => [] }
+      ] }
+  end
 
   before do
     # the client is initialized with a fake token (see comment in FolioClient.configure for why).  this
     # simulates the initial obtainment of a valid token after FolioClient makes the very first post-initialization request.
     stub_request(:get, "#{url}/search/instances?query=hrid==in808")
-      .to_return({status: 401}, {status: 200, body: search_instance_response.to_json})
+      .to_return({ status: 401 }, { status: 200, body: search_instance_response.to_json })
     stub_request(:post, "#{url}/authn/login")
       .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
 
-    client.fetch_external_id(hrid: "in808")
+    client.fetch_external_id(hrid: 'in808')
 
-    allow(DateTime).to receive(:now).and_return(DateTime.parse("2023-03-01T11:17:25-05:00"))
+    allow(DateTime).to receive(:now).and_return(DateTime.parse('2023-03-01T11:17:25-05:00'))
   end
 
-  describe "#import" do
-    let(:marc_file_name) { "2023-03-01T11:17:25-05:00.marc" }
+  describe '#import' do
+    let(:marc_file_name) { '2023-03-01T11:17:25-05:00.marc' }
     let(:records) do
       [
         MARC::Record.new.tap do |record|
-          record << MARC::DataField.new("245", "0", " ", ["a", "Folio 21: a bibliography of the Folio Society 1947-1967"])
+          record << MARC::DataField.new('245', '0', ' ',
+                                        ['a', 'Folio 21: a bibliography of the Folio Society 1947-1967'])
         end
       ]
     end
-    let(:job_profile_id) { "ae0a94d0" }
-    let(:job_profile_name) { "ETDs" }
-    let(:job_execution_id) { "4ba4f4ab" }
+    let(:job_profile_id) { 'ae0a94d0' }
+    let(:job_profile_name) { 'ETDs' }
+    let(:job_execution_id) { '4ba4f4ab' }
     let(:upload_definition_request_body) do
       {
         fileDefinitions:
         [
-          {name: marc_file_name}
+          { name: marc_file_name }
         ]
       }
     end
     let(:upload_definition_response_body) do
       {
-        id: "d39546ed-622b-4e09-92ca-210535ff7ab4",
-        metaJobExecutionId: "4ba4f4ab-d3fd-45b1-b73f-f3f0bcff17fe",
-        status: "NEW",
-        createDate: "2023-02-14T13:16:19.708+00:00",
+        id: 'd39546ed-622b-4e09-92ca-210535ff7ab4',
+        metaJobExecutionId: '4ba4f4ab-d3fd-45b1-b73f-f3f0bcff17fe',
+        status: 'NEW',
+        createDate: '2023-02-14T13:16:19.708+00:00',
         fileDefinitions: [
           {
-            id: "181f6315-aa98-4b4d-ab1f-3c7f9df524b1",
+            id: '181f6315-aa98-4b4d-ab1f-3c7f9df524b1',
             name: marc_file_name,
-            status: "NEW",
+            status: 'NEW',
             jobExecutionId: job_execution_id,
-            uploadDefinitionId: "d39546ed-622b-4e09-92ca-210535ff7ab4",
-            createDate: "2023-02-14T13:16:19.708+00:00"
+            uploadDefinitionId: 'd39546ed-622b-4e09-92ca-210535ff7ab4',
+            createDate: '2023-02-14T13:16:19.708+00:00'
           }
         ],
         metadata: {
-          createdDate: "2023-02-14T13:16:19.474+00:00",
-          createdByUserId: "297649ab-3f9e-5ece-91a3-25cf700062ae",
-          updatedDate: "2023-02-14T13:16:19.474+00:00",
-          updatedByUserId: "297649ab-3f9e-5ece-91a3-25cf700062ae"
+          createdDate: '2023-02-14T13:16:19.474+00:00',
+          createdByUserId: '297649ab-3f9e-5ece-91a3-25cf700062ae',
+          updatedDate: '2023-02-14T13:16:19.474+00:00',
+          updatedByUserId: '297649ab-3f9e-5ece-91a3-25cf700062ae'
         }
       }
     end
 
     let(:upload_file_response_body) do
       {
-        id: "d39546ed-622b-4e09-92ca-210535ff7ab4",
-        metaJobExecutionId: "4ba4f4ab-d3fd-45b1-b73f-f3f0bcff17fe",
-        status: "LOADED",
-        createDate: "2023-02-14T13:16:19.708+00:00",
+        id: 'd39546ed-622b-4e09-92ca-210535ff7ab4',
+        metaJobExecutionId: '4ba4f4ab-d3fd-45b1-b73f-f3f0bcff17fe',
+        status: 'LOADED',
+        createDate: '2023-02-14T13:16:19.708+00:00',
         fileDefinitions: [
           {
-            id: "181f6315-aa98-4b4d-ab1f-3c7f9df524b1",
+            id: '181f6315-aa98-4b4d-ab1f-3c7f9df524b1',
             name: marc_file_name,
-            status: "UPLOADED",
+            status: 'UPLOADED',
             jobExecutionId: job_execution_id,
-            uploadDefinitionId: "d39546ed-622b-4e09-92ca-210535ff7ab4",
-            createDate: "2023-02-14T13:16:19.708+00:00"
+            uploadDefinitionId: 'd39546ed-622b-4e09-92ca-210535ff7ab4',
+            createDate: '2023-02-14T13:16:19.708+00:00'
           }
         ],
         metadata: {
-          createdDate: "2023-02-14T13:16:19.474+00:00",
-          createdByUserId: "297649ab-3f9e-5ece-91a3-25cf700062ae",
-          updatedDate: "2023-02-14T13:16:19.474+00:00",
-          updatedByUserId: "297649ab-3f9e-5ece-91a3-25cf700062ae"
+          createdDate: '2023-02-14T13:16:19.474+00:00',
+          createdByUserId: '297649ab-3f9e-5ece-91a3-25cf700062ae',
+          updatedDate: '2023-02-14T13:16:19.474+00:00',
+          updatedByUserId: '297649ab-3f9e-5ece-91a3-25cf700062ae'
         }
       }
     end
@@ -108,7 +109,7 @@ RSpec.describe FolioClient::DataImport do
         {
           id: job_profile_id,
           name: job_profile_name,
-          dataType: "MARC"
+          dataType: 'MARC'
         }
       }
     end
@@ -118,19 +119,19 @@ RSpec.describe FolioClient::DataImport do
         .with(
           body: upload_definition_request_body.to_json,
           headers: {
-            "Content-Type" => "application/json",
-            "X-Okapi-Token" => "a_long_silly_token"
+            'Content-Type' => 'application/json',
+            'X-Okapi-Token' => 'a_long_silly_token'
           }
         ).to_return(status: 200,
-          body: upload_definition_response_body.to_json,
-          headers: {})
+                    body: upload_definition_response_body.to_json,
+                    headers: {})
 
       stub_request(:post, "#{url}/data-import/uploadDefinitions/d39546ed-622b-4e09-92ca-210535ff7ab4/files/181f6315-aa98-4b4d-ab1f-3c7f9df524b1")
         .with(
           body: "00098     2200037   4500245006000000\u001E0 \u001FaFolio 21: a bibliography of the Folio Society 1947-1967\u001E\u001D",
           headers: {
-            "Content-Type" => "application/octet-stream",
-            "X-Okapi-Token" => "a_long_silly_token"
+            'Content-Type' => 'application/octet-stream',
+            'X-Okapi-Token' => 'a_long_silly_token'
           }
         )
         .to_return(status: 200, body: upload_file_response_body.to_json, headers: {})
@@ -139,19 +140,20 @@ RSpec.describe FolioClient::DataImport do
         .with(
           body: process_request_body.to_json,
           headers: {
-            "Content-Type" => "application/json",
-            "X-Okapi-Token" => "a_long_silly_token"
+            'Content-Type' => 'application/json',
+            'X-Okapi-Token' => 'a_long_silly_token'
           }
         )
-        .to_return(status: 204, body: "", headers: {})
+        .to_return(status: 204, body: '', headers: {})
     end
 
-    it "returns a JobStatus instance" do
-      expect(data_import.import(records: records, job_profile_id: job_profile_id, job_profile_name: job_profile_name)).to be_instance_of(FolioClient::JobStatus)
+    it 'returns a JobStatus instance' do
+      expect(data_import.import(records: records, job_profile_id: job_profile_id,
+                                job_profile_name: job_profile_name)).to be_instance_of(FolioClient::JobStatus)
     end
   end
 
-  describe "#job_profiles" do
+  describe '#job_profiles' do
     subject(:profiles) { data_import.job_profiles }
 
     let(:job_profiles_body) do
@@ -164,24 +166,24 @@ RSpec.describe FolioClient::DataImport do
       stub_request(:get, "#{url}/data-import-profiles/jobProfiles")
         .with(
           headers: {
-            "Content-Type" => "application/json",
-            "X-Okapi-Token" => "a_long_silly_token"
+            'Content-Type' => 'application/json',
+            'X-Okapi-Token' => 'a_long_silly_token'
           }
         )
         .to_return(status: 200, body: job_profiles_body, headers: {})
     end
 
-    it "returns the expected number of profiles" do
+    it 'returns the expected number of profiles' do
       expect(profiles.count).to eq(10)
     end
 
-    it "returns the expected fields for profiles" do
-      expect(profiles).to all(have_keys("id", "name", "description", "dataType"))
+    it 'returns the expected fields for profiles' do
+      expect(profiles).to all(have_keys('id', 'name', 'description', 'dataType'))
     end
 
     # NOTE: not checking all values; just using dataType as a sample
-    it "returns the expected values for profiles" do
-      expect(profiles.map { |profile| profile["dataType"] }).to all(eq("MARC"))
+    it 'returns the expected values for profiles' do
+      expect(profiles.map { |profile| profile['dataType'] }).to all(eq('MARC'))
     end
   end
 end

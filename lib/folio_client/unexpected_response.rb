@@ -4,6 +4,8 @@ class FolioClient
   # Handles unexpected responses when communicating with Folio
   class UnexpectedResponse
     # @param [Faraday::Response] response
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/AbcSize
     def self.call(response)
       case response.status
       when 401
@@ -23,4 +25,6 @@ class FolioClient
       end
     end
   end
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 end

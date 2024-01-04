@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "date"
-require "stringio"
+require 'date'
+require 'stringio'
 
 class FolioClient
   # Imports MARC records into FOLIO
@@ -17,16 +17,17 @@ class FolioClient
     # @param job_profile_id [String] job profile id to use for import
     # @param job_profile_name [String] job profile name to use for import
     # @return [JobStatus] a job status instance to get information about the data import job
+    # rubocop:disable Metrics/MethodLength
     def import(records:, job_profile_id:, job_profile_name:)
-      response_hash = client.post("/data-import/uploadDefinitions", {fileDefinitions: [{name: marc_filename}]})
-      upload_definition_id = response_hash.dig("fileDefinitions", 0, "uploadDefinitionId")
-      job_execution_id = response_hash.dig("fileDefinitions", 0, "jobExecutionId")
-      file_definition_id = response_hash.dig("fileDefinitions", 0, "id")
+      response_hash = client.post('/data-import/uploadDefinitions', { fileDefinitions: [{ name: marc_filename }] })
+      upload_definition_id = response_hash.dig('fileDefinitions', 0, 'uploadDefinitionId')
+      job_execution_id = response_hash.dig('fileDefinitions', 0, 'jobExecutionId')
+      file_definition_id = response_hash.dig('fileDefinitions', 0, 'id')
 
       upload_file_response_hash = client.post(
         "/data-import/uploadDefinitions/#{upload_definition_id}/files/#{file_definition_id}",
         marc_binary(records),
-        content_type: "application/octet-stream"
+        content_type: 'application/octet-stream'
       )
 
       client.post(
@@ -36,19 +37,20 @@ class FolioClient
           jobProfileInfo: {
             id: job_profile_id,
             name: job_profile_name,
-            dataType: "MARC"
+            dataType: 'MARC'
           }
         }
       )
 
       JobStatus.new(client, job_execution_id: job_execution_id)
     end
+    # rubocop:enable Metrics/MethodLength
 
     # @return [Array<Hash<String,String>>] a list of job profile hashes
     def job_profiles
       client
-        .get("/data-import-profiles/jobProfiles")
-        .fetch("jobProfiles", [])
+        .get('/data-import-profiles/jobProfiles')
+        .fetch('jobProfiles', [])
         .map { |profile| profile.slice(*JOB_PROFILE_ATTRIBUTES) }
     end
 

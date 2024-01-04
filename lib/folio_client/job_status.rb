@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "timeout"
-require "dry/monads"
+require 'timeout'
+require 'dry/monads'
 
 class FolioClient
   # Wraps operations waiting for results from jobs
@@ -27,7 +27,7 @@ class FolioClient
     def status
       response_hash = client.get("/change-manager/jobExecutions/#{job_execution_id}")
 
-      return Failure(:pending) if !["COMMITTED", "ERROR"].include?(response_hash["status"])
+      return Failure(:pending) unless %w[COMMITTED ERROR].include?(response_hash['status'])
 
       Success()
     rescue ResourceNotFound
@@ -35,24 +35,27 @@ class FolioClient
       Failure(:not_found)
     end
 
-    def wait_until_complete(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs, max_checks: default_max_checks)
+    def wait_until_complete(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs,
+                            max_checks: default_max_checks)
       wait_with_timeout(wait_secs: wait_secs, timeout_secs: timeout_secs, max_checks: max_checks) { status }
     end
 
+    # rubocop:disable Metrics/AbcSize
     def instance_hrids
       current_status = status
       return current_status unless current_status.success?
 
       @instance_hrids ||= wait_with_timeout do
         response = client
-          .get("/metadata-provider/journalRecords/#{job_execution_id}")
-          .fetch("journalRecords", [])
-          .select { |journal_record| journal_record["entityType"] == "INSTANCE" && journal_record["actionStatus"] == "COMPLETED" }
-          .filter_map { |instance_record| instance_record["entityHrId"] }
+                   .get("/metadata-provider/journalRecords/#{job_execution_id}")
+                   .fetch('journalRecords', [])
+                   .select { |journal_record| journal_record['entityType'] == 'INSTANCE' && journal_record['actionStatus'] == 'COMPLETED' }
+                   .filter_map { |instance_record| instance_record['entityHrId'] }
 
         response.empty? ? Failure() : Success(response)
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     private
 
@@ -71,7 +74,8 @@ class FolioClient
       10
     end
 
-    def wait_with_timeout(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs, max_checks: default_max_checks)
+    def wait_with_timeout(wait_secs: default_wait_secs, timeout_secs: default_timeout_secs,
+                          max_checks: default_max_checks)
       Timeout.timeout(timeout_secs) do
         loop.with_index do |_, i|
           result = yield
@@ -94,7 +98,8 @@ class FolioClient
     def check_not_found(result, index, max_checks)
       return unless result.failure? && result.failure == :not_found && index > max_checks
 
-      raise ResourceNotFound, "Job #{job_execution_id} not found after #{index} retries. The data import job may still have completed."
+      raise ResourceNotFound,
+            "Job #{job_execution_id} not found after #{index} retries. The data import job may still have completed."
     end
   end
 end

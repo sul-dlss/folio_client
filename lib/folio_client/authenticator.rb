@@ -14,11 +14,11 @@ class FolioClient
 
     # Request an access_token
     def token
-      response = connection.post("/authn/login", login_params.to_json)
+      response = connection.post('/authn/login', login_params.to_json)
 
       UnexpectedResponse.call(response) unless response.success?
 
-      JSON.parse(response.body)["okapiToken"]
+      JSON.parse(response.body)['okapiToken']
     end
 
     attr_reader :login_params, :connection
