@@ -1,17 +1,18 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/module/delegation"
-require "active_support/core_ext/object/blank"
-require "faraday"
-require "marc"
-require "ostruct"
-require "singleton"
-require "zeitwerk"
+require 'active_support/core_ext/module/delegation'
+require 'active_support/core_ext/object/blank'
+require 'faraday'
+require 'marc'
+require 'ostruct'
+require 'singleton'
+require 'zeitwerk'
 
 # Load the gem's internal dependencies: use Zeitwerk instead of needing to manually require classes
 Zeitwerk::Loader.for_gem.setup
 
 # Client for interacting with the Folio API
+# rubocop:disable Metrics/ClassLength
 class FolioClient
   include Singleton
 
@@ -40,8 +41,8 @@ class FolioClient
   class ConflictError < Error; end
 
   DEFAULT_HEADERS = {
-    accept: "application/json, text/plain",
-    content_type: "application/json"
+    accept: 'application/json, text/plain',
+    content_type: 'application/json'
   }.freeze
 
   class << self
@@ -50,6 +51,7 @@ class FolioClient
     # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
     # @return [FolioClient] the configured Singleton class
     def configure(url:, login_params:, okapi_headers:, timeout: default_timeout)
+      # rubocop:disable Style/OpenStructUse
       instance.config = OpenStruct.new(
         # For the initial token, use a dummy value to avoid hitting any APIs
         # during configuration, allowing `with_token_refresh_when_unauthorized` to handle
@@ -61,22 +63,23 @@ class FolioClient
         # NOTE: `nil` and blank string cannot be used as dummy values here as
         # they lead to a malformed request to be sent, which triggers an
         # exception not rescued by `with_token_refresh_when_unauthorized`
-        token: "a temporary dummy token to avoid hitting the API before it is needed",
+        token: 'a temporary dummy token to avoid hitting the API before it is needed',
         url: url,
         login_params: login_params,
         okapi_headers: okapi_headers,
         timeout: timeout
       )
+      # rubocop:enable Style/OpenStructUse
 
       self
     end
 
     delegate :config, :connection, :data_import, :default_timeout,
-      :edit_marc_json, :fetch_external_id, :fetch_hrid, :fetch_instance_info,
-      :fetch_marc_hash, :fetch_marc_xml, :get, :has_instance_status?,
-      :http_get_headers, :http_post_and_put_headers, :interface_details,
-      :job_profiles, :organization_interfaces, :organizations, :users, :user_details,
-      :post, :put, to:
+             :edit_marc_json, :fetch_external_id, :fetch_hrid, :fetch_instance_info,
+             :fetch_marc_hash, :fetch_marc_xml, :get, :has_instance_status?,
+             :http_get_headers, :http_post_and_put_headers, :interface_details,
+             :job_profiles, :organization_interfaces, :organizations, :users, :user_details,
+             :post, :put, to:
       :instance end
 
   attr_accessor :config
@@ -86,7 +89,7 @@ class FolioClient
   # @param params [Hash] params to get to the API
   def get(path, params = {})
     response = with_token_refresh_when_unauthorized do
-      connection.get(path, params, {"x-okapi-token": config.token})
+      connection.get(path, params, { 'x-okapi-token': config.token })
     end
 
     UnexpectedResponse.call(response) unless response.success?
@@ -100,12 +103,13 @@ class FolioClient
   # If the body is JSON, it will be automatically serialized
   # @param path [String] the path to the Folio API request
   # @param body [Object] body to post to the API as JSON
-  def post(path, body = nil, content_type: "application/json")
-    req_body = (content_type == "application/json") ? body&.to_json : body
+  # rubocop:disable Metrics/MethodLength
+  def post(path, body = nil, content_type: 'application/json')
+    req_body = content_type == 'application/json' ? body&.to_json : body
     response = with_token_refresh_when_unauthorized do
       req_headers = {
-        "x-okapi-token": config.token,
-        "content-type": content_type
+        'x-okapi-token': config.token,
+        'content-type': content_type
       }
       connection.post(path, req_body, req_headers)
     end
@@ -116,17 +120,19 @@ class FolioClient
 
     JSON.parse(response.body)
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Send an authenticated put request
   # If the body is JSON, it will be automatically serialized
   # @param path [String] the path to the Folio API request
   # @param body [Object] body to put to the API as JSON
-  def put(path, body = nil, content_type: "application/json")
-    req_body = (content_type == "application/json") ? body&.to_json : body
+  # rubocop:disable Metrics/MethodLength
+  def put(path, body = nil, content_type: 'application/json')
+    req_body = content_type == 'application/json' ? body&.to_json : body
     response = with_token_refresh_when_unauthorized do
       req_headers = {
-        "x-okapi-token": config.token,
-        "content-type": content_type
+        'x-okapi-token': config.token,
+        'content-type': content_type
       }
       connection.put(path, req_body, req_headers)
     end
@@ -137,13 +143,14 @@ class FolioClient
 
     JSON.parse(response.body)
   end
+  # rubocop:enable Metrics/MethodLength
 
   # the base connection to the Folio API
   def connection
     @connection ||= Faraday.new(
       url: config.url,
       headers: DEFAULT_HEADERS.merge(config.okapi_headers || {}),
-      request: {timeout: config.timeout}
+      request: { timeout: config.timeout }
     )
   end
 
@@ -185,7 +192,7 @@ class FolioClient
   end
 
   # @see Inventory#has_instance_status?
-  def has_instance_status?(...)
+  def has_instance_status?(...) # rubocop:disable Naming/PredicateName
     Inventory
       .new(self)
       .has_instance_status?(...)
@@ -277,3 +284,4 @@ class FolioClient
     response
   end
 end
+# rubocop:enable Metrics/ClassLength
