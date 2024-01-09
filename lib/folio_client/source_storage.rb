@@ -5,13 +5,6 @@ class FolioClient
   class SourceStorage
     FIELDS_TO_REMOVE = %w[001 003].freeze
 
-    attr_accessor :client
-
-    # @param client [FolioClient] the configured client
-    def initialize(client)
-      @client = client
-    end
-
     # get marc bib data from folio given an instance HRID
     # @param instance_hrid [String] the key to use for MARC lookup
     # @return [Hash] hash representation of the MARC. should be usable by MARC::Record.new_from_hash (from ruby-marc gem)
@@ -71,5 +64,11 @@ class FolioClient
     end
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/AbcSize
+
+    private
+
+    def client
+      FolioClient.instance
+    end
   end
 end

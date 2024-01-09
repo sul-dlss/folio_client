@@ -1,17 +1,16 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::RecordsEditor do
-  subject(:records_editor) { described_class.new(client) }
+  subject(:records_editor) { described_class.new }
 
   let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'aLongSTring.eNCodinga.JwTeeeee' }
-  let(:client) { FolioClient.configure(**args) }
+  let(:client) { FolioClient.instance }
   let(:hrid) { 'in00000000067' }
   let(:external_id) { '5108040a-65bc-40ed-bd50-265958301ce4' }
-
   let(:mock_response_json) do
     { 'parsedRecordId' => '1ab23862-46db-4da9-af5b-633adbf5f90f',
       'parsedRecordDtoId' => '1281ae0b-548b-49e3-b740-050f28e6d57f',
@@ -94,6 +93,8 @@ RSpec.describe FolioClient::RecordsEditor do
   end
 
   before do
+    FolioClient.configure(**args)
+
     stub_request(:post, "#{url}/authn/login")
       .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
     allow(client).to receive(:fetch_instance_info).with(hrid: hrid).and_return({ '_version' => 1, 'id' => external_id })

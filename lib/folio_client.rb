@@ -82,8 +82,8 @@ class FolioClient
              :fetch_marc_hash, :fetch_marc_xml, :get, :has_instance_status?,
              :http_get_headers, :http_post_and_put_headers, :interface_details,
              :job_profiles, :organization_interfaces, :organizations, :users, :user_details,
-             :post, :put, to:
-      :instance end
+             :post, :put, to: :instance
+  end
 
   attr_accessor :config
 
@@ -169,98 +169,98 @@ class FolioClient
   # @see Inventory#fetch_hrid
   def fetch_hrid(...)
     Inventory
-      .new(self)
+      .new
       .fetch_hrid(...)
   end
 
   # @see Inventory#fetch_external_id
   def fetch_external_id(...)
     Inventory
-      .new(self)
+      .new
       .fetch_external_id(...)
   end
 
   # @see Inventory#fetch_instance_info
   def fetch_instance_info(...)
     Inventory
-      .new(self)
+      .new
       .fetch_instance_info(...)
   end
 
   # @see SourceStorage#fetch_marc_hash
   def fetch_marc_hash(...)
     SourceStorage
-      .new(self)
+      .new
       .fetch_marc_hash(...)
   end
 
   # @see SourceStorage#fetch_marc_xml
   def fetch_marc_xml(...)
     SourceStorage
-      .new(self)
+      .new
       .fetch_marc_xml(...)
   end
 
   # @see Inventory#has_instance_status?
   def has_instance_status?(...) # rubocop:disable Naming/PredicateName
     Inventory
-      .new(self)
+      .new
       .has_instance_status?(...)
   end
 
   # @ see DataImport#import
   def data_import(...)
     DataImport
-      .new(self)
+      .new
       .import(...)
   end
 
   # @ see DataImport#job_profiles
   def job_profiles(...)
     DataImport
-      .new(self)
+      .new
       .job_profiles(...)
   end
 
   # @see RecordsEditor#edit_marc_json
   def edit_marc_json(...)
     RecordsEditor
-      .new(self)
+      .new
       .edit_marc_json(...)
   end
 
   # @see Organizations#fetch_list
   def organizations(...)
     Organizations
-      .new(self)
+      .new
       .fetch_list(...)
   end
 
   # @see Organizations#fetch_interface_list
   def organization_interfaces(...)
     Organizations
-      .new(self)
+      .new
       .fetch_interface_list(...)
   end
 
   # @see Organizations#fetch_interface_details
   def interface_details(...)
     Organizations
-      .new(self)
+      .new
       .fetch_interface_details(...)
   end
 
   # @see Users#fetch_list
   def users(...)
     Users
-      .new(self)
+      .new
       .fetch_list(...)
   end
 
   # @see Users#fetch_user_details
   def user_details(...)
     Users
-      .new(self)
+      .new
       .fetch_user_details(...)
   end
 
@@ -288,7 +288,7 @@ class FolioClient
     # if unauthorized, token has likely expired. try to get a new token and then retry the same request(s).
     if response.status == 401 || response.status == 403
 
-      config.token = Authenticator.token(config.login_params, connection, config.legacy_auth, cookie_jar)
+      config.token = Authenticator.token
       response = yield
     end
 

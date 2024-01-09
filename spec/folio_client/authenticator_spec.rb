@@ -6,18 +6,20 @@ RSpec.describe FolioClient::Authenticator do
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'a_long_silly_token' }
-  let(:connection) { FolioClient.configure(**args).connection }
+  let(:connection) { FolioClient.connection }
   let(:http_status) { 200 }
   let(:http_body) { "{\"okapiToken\" : \"#{token}\"}" }
   let(:legacy_auth) { true }
-  let(:cookie_jar) { FolioClient.configure(**args).cookie_jar }
+  let(:cookie_jar) { FolioClient.cookie_jar }
 
   before do
+    FolioClient.configure(**args)
+
     stub_request(:post, "#{url}/authn/login").to_return(status: http_status, body: http_body)
   end
 
   describe '.token' do
-    let(:instance) { described_class.new(login_params, connection, legacy_auth, cookie_jar) }
+    let(:instance) { described_class.new }
 
     before do
       allow(described_class).to receive(:new).and_return(instance)
@@ -25,13 +27,13 @@ RSpec.describe FolioClient::Authenticator do
     end
 
     it 'invokes #token on a new instance' do
-      described_class.token(login_params, connection, legacy_auth, cookie_jar)
+      described_class.token
       expect(instance).to have_received(:token).once
     end
   end
 
   describe '#token' do
-    subject(:authenticator) { described_class.new(login_params, connection, legacy_auth, cookie_jar) }
+    subject(:authenticator) { described_class.new }
 
     context 'when correct credentials' do
       it 'parses the token from the response' do

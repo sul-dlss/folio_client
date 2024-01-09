@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::Organizations do
-  subject(:organizations) do
-    described_class.new(client)
-  end
+  subject(:organizations) { described_class.new }
 
   let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'a_long_silly_token' }
-  let(:client) { FolioClient.configure(**args) }
+  let(:client) { FolioClient.instance }
   let(:id) { 'some_long_id_that_is_long' }
   let(:query) { '"active=="true"' }
 
   before do
+    FolioClient.configure(**args)
+
     stub_request(:post, "#{url}/authn/login")
       .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
   end

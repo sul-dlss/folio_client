@@ -3,7 +3,7 @@
 RSpec.describe FolioClient::JobStatus do
   include Dry::Monads[:result]
 
-  let(:job_status) { described_class.new(client, job_execution_id: job_execution_id) }
+  let(:job_status) { described_class.new(job_execution_id: job_execution_id) }
   let(:client) do
     FolioClient.configure(
       url: url,

@@ -3,13 +3,6 @@
 class FolioClient
   # Lookup items in the Folio inventory
   class Inventory
-    attr_accessor :client
-
-    # @param client [FolioClient] the configured client
-    def initialize(client)
-      @client = client
-    end
-
     # get instance HRID from barcode
     # @param barcode [String] barcode
     # @return [String,nil] instance HRID if present, otherwise nil.
@@ -69,6 +62,12 @@ class FolioClient
       return true if instance_status_id == status_id
 
       false
+    end
+
+    private
+
+    def client
+      FolioClient.instance
     end
   end
 end

@@ -4,13 +4,6 @@ class FolioClient
   # Query user records in Folio; see
   # https://s3.amazonaws.com/foliodocs/api/mod-users/r/users.html
   class Users
-    attr_accessor :client
-
-    # @param client [FolioClient] the configured client
-    def initialize(client)
-      @client = client
-    end
-
     # @param query [String] an optional query to limit the number of users returned
     # @param limit [Integer] the number of results to return (defaults to 10,000)
     # @param offset [Integer] the offset for results returned (defaults to 0)
@@ -27,6 +20,12 @@ class FolioClient
       client.get("/users/#{id}", {
                    lang: lang
                  })
+    end
+
+    private
+
+    def client
+      FolioClient.instance
     end
   end
 end
