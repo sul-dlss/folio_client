@@ -25,8 +25,11 @@ class FolioClient
       if legacy_auth
         JSON.parse(response.body)['okapiToken']
       else
-        access_cookies = cookie_jar.cookies.select { |cookie| cookie.name == 'folioAccessToken' }
-        access_cookies[0].value
+        access_cookie = cookie_jar.cookies.find { |cookie| cookie.name == 'folioAccessToken' }
+
+        raise StandardError, "Problem with folioAccessToken cookie: #{response.headers}, #{response.body}" unless access_cookie
+
+        access_cookie.value
       end
     end
     # rubocop:enable Metrics/AbcSize

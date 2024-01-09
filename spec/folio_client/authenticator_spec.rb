@@ -95,6 +95,7 @@ RSpec.describe FolioClient::Authenticator do
 
     context 'when not using legacy auth' do
       let(:legacy_auth) { false }
+      let(:http_status) { 201 }
       let(:token) { 'a_token_4567' }
       # rubocop:disable Layout/LineLength
       let(:headers) do
@@ -109,6 +110,24 @@ RSpec.describe FolioClient::Authenticator do
 
       it 'parses the token from the response' do
         expect(authenticator.token).to eq(token)
+      end
+    end
+
+    context 'when there is a problem with the cookie' do
+      let(:legacy_auth) { false }
+      let(:http_status) { 201 }
+      let(:token) { nil }
+      let(:headers) do
+        { 'Set-Cookie': 'folioRefreshToken=blah; Max-Age=604800; Expires=Fri, 29 Sep 2020 14:20:10 GMT; Max-Age=604800; Path=/; Secure; HTTPOnly;' }
+      end
+
+      before do
+        stub_request(:post, "#{url}/authn/login-with-expiry").to_return(status: http_status, headers: headers)
+      end
+
+      it 'raises an error' do
+        FolioClient.cookie_jar.clear
+        expect { authenticator.token }.to raise_error(StandardError)
       end
     end
   end
