@@ -628,6 +628,42 @@ RSpec.describe FolioClient do
         .from(expired_token)
         .to(new_token)
     end
+
+    context 'when using /login-with-expiry (not legacy auth)' do
+      let(:expired_token) { token }
+      let(:new_token) { 'new_token' }
+      let(:legacy_auth) { false }
+      let(:headers) do
+        { 'Set-Cookie': "folioAccessToken=#{new_token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
+      end
+
+      before do
+        stub_request(:post, "#{url}/authn/login-with-expiry")
+          .to_return(
+            { status: 200, headers: headers }
+          )
+        stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
+          .with(headers: { 'x-okapi-token': expired_token })
+          .to_return(
+            { status: 403 }
+          )
+        stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
+          .with(headers: { 'x-okapi-token': new_token })
+          .to_return(
+            { status: 200, body: search_instance_response.to_json }
+          )
+        stub_request(:get, "#{url}/inventory/instances/#{instance_uuid}")
+          .with(headers: { 'x-okapi-token': new_token })
+          .to_return(status: 200, body: inventory_instance_response.to_json)
+      end
+
+      it 'fetches new token and retries' do
+        expect { client.fetch_hrid(barcode: barcode) }
+          .to change(client.config, :token)
+          .from(expired_token)
+          .to(new_token)
+      end
+    end
   end
 
   describe '.edit_marc_json' do

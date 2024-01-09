@@ -44,14 +44,15 @@ require 'folio_client'
 client = FolioClient.configure(
     url: Settings.okapi.url,
     login_params: Settings.okapi.login_params,
-    okapi_headers: Settings.okapi.headers
+    okapi_headers: Settings.okapi.headers,
+    legacy_auth: true # consumers should leave set to true (default) until /login-with-expiry endpoint enabled in Poppy
 )
 ```
 
 The client is smart enough to automatically request a new token if it detects the one it is using has expired. If for some reason, you want to immediately request a new token, you can do this:
 
 ```ruby
-client.config.token = FolioClient::Authenticator.token(client.config.login_params, client.connection)
+client.config.token = FolioClient::Authenticator.token(client.config.login_params, client.connection, client.config.legacy_auth, client.cookie_jar)
 ```
 
 ## API Coverage

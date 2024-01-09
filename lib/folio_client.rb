@@ -3,6 +3,7 @@
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/object/blank'
 require 'faraday'
+require 'faraday-cookie_jar'
 require 'marc'
 require 'ostruct'
 require 'singleton'
@@ -49,8 +50,9 @@ class FolioClient
     # @param url [String] the folio API URL
     # @param login_params [Hash] the folio client login params (username:, password:)
     # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
+    # @param legacy_auth [Boolean] true to use legacy /login rather than Poppy /login-with-expiry endpoint
     # @return [FolioClient] the configured Singleton class
-    def configure(url:, login_params:, okapi_headers:, timeout: default_timeout)
+    def configure(url:, login_params:, okapi_headers:, timeout: default_timeout, legacy_auth: true)
       # rubocop:disable Style/OpenStructUse
       instance.config = OpenStruct.new(
         # For the initial token, use a dummy value to avoid hitting any APIs
@@ -67,14 +69,15 @@ class FolioClient
         url: url,
         login_params: login_params,
         okapi_headers: okapi_headers,
-        timeout: timeout
+        timeout: timeout,
+        legacy_auth: legacy_auth # default true until we have new token endpoint enabled in Poppy
       )
       # rubocop:enable Style/OpenStructUse
 
       self
     end
 
-    delegate :config, :connection, :data_import, :default_timeout,
+    delegate :config, :connection, :cookie_jar, :data_import, :default_timeout,
              :edit_marc_json, :fetch_external_id, :fetch_hrid, :fetch_instance_info,
              :fetch_marc_hash, :fetch_marc_xml, :get, :has_instance_status?,
              :http_get_headers, :http_post_and_put_headers, :interface_details,
@@ -151,7 +154,14 @@ class FolioClient
       url: config.url,
       headers: DEFAULT_HEADERS.merge(config.okapi_headers || {}),
       request: { timeout: config.timeout }
-    )
+    ) do |faraday|
+      faraday.use :cookie_jar, jar: cookie_jar
+      faraday.adapter Faraday.default_adapter
+    end
+  end
+
+  def cookie_jar
+    @cookie_jar ||= HTTP::CookieJar.new
   end
 
   # Public methods available on the FolioClient below
@@ -276,8 +286,9 @@ class FolioClient
     response = yield
 
     # if unauthorized, token has likely expired. try to get a new token and then retry the same request(s).
-    if response.status == 401
-      config.token = Authenticator.token(config.login_params, connection)
+    if response.status == 401 || response.status == 403
+
+      config.token = Authenticator.token(config.login_params, connection, config.legacy_auth, cookie_jar)
       response = yield
     end
 

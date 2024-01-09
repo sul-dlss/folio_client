@@ -34,6 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activesupport', '>= 4.2', '< 8'
   spec.add_dependency 'dry-monads'
   spec.add_dependency 'faraday'
+  spec.add_dependency 'faraday-cookie_jar'
   spec.add_dependency 'marc'
   spec.add_dependency 'zeitwerk'
 
