@@ -78,11 +78,12 @@ class FolioClient
     end
 
     delegate :config, :connection, :cookie_jar, :data_import, :default_timeout,
-             :edit_marc_json, :fetch_external_id, :fetch_hrid, :fetch_instance_info,
-             :fetch_marc_hash, :fetch_marc_xml, :get, :has_instance_status?,
+             :edit_marc_json, :fetch_external_id, :fetch_hrid,
+             :fetch_instance_info, :fetch_marc_hash, :fetch_marc_xml,
+             :force_token_refresh!, :get, :has_instance_status?,
              :http_get_headers, :http_post_and_put_headers, :interface_details,
-             :job_profiles, :organization_interfaces, :organizations, :users, :user_details,
-             :post, :put, to: :instance
+             :job_profiles, :organization_interfaces, :organizations, :users,
+             :user_details, :post, :put, to: :instance
   end
 
   attr_accessor :config
@@ -268,6 +269,10 @@ class FolioClient
     120
   end
 
+  def force_token_refresh!
+    config.token = Authenticator.token
+  end
+
   private
 
   # Wraps API operations to request new access token if expired.
@@ -287,8 +292,7 @@ class FolioClient
 
     # if unauthorized, token has likely expired. try to get a new token and then retry the same request(s).
     if response.status == 401 || response.status == 403
-
-      config.token = Authenticator.token
+      force_token_refresh!
       response = yield
     end
 
