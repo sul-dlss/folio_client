@@ -62,6 +62,22 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe '#force_token_refresh!' do
+    let(:refreshed_token) { 'another dummy token value' }
+
+    before do
+      stub_request(:post, "#{url}/authn/login")
+        .to_return(status: 200, body: "{\"okapiToken\" : \"#{refreshed_token}\"}")
+    end
+
+    it 'forces a token refresh' do
+      expect { client.force_token_refresh! }
+        .to change(client.config, :token)
+        .from(token)
+        .to(refreshed_token)
+    end
+  end
+
   describe '#get' do
     let(:path) { 'some_path' }
     let(:response) { { some: 'response' }.to_json }

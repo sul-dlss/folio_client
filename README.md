@@ -52,7 +52,7 @@ client = FolioClient.configure(
 The client is smart enough to automatically request a new token if it detects the one it is using has expired. If for some reason, you want to immediately request a new token, you can do this:
 
 ```ruby
-client.config.token = FolioClient::Authenticator.token
+client.force_token_refresh! # or `FolioClient.force_token_refresh!` as they are identical
 ```
 
 ## API Coverage
