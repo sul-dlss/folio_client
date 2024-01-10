@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::DataImport do
-  let(:data_import) { described_class.new(client) }
+  let(:client) { FolioClient.instance }
+  let(:data_import) { described_class.new }
   let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'a_long_silly_token' }
-  let(:client) { FolioClient.configure(**args) }
   let(:search_instance_response) do
     { 'totalRecords' => 1,
       'instances' => [
@@ -20,6 +20,8 @@ RSpec.describe FolioClient::DataImport do
   end
 
   before do
+    FolioClient.configure(**args)
+
     # the client is initialized with a fake token (see comment in FolioClient.configure for why).  this
     # simulates the initial obtainment of a valid token after FolioClient makes the very first post-initialization request.
     stub_request(:get, "#{url}/search/instances?query=hrid==in808")

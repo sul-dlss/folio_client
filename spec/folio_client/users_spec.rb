@@ -2,7 +2,7 @@
 
 RSpec.describe FolioClient::Users do
   subject(:users) do
-    described_class.new(client)
+    described_class.new
   end
 
   let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
@@ -10,10 +10,9 @@ RSpec.describe FolioClient::Users do
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'a_long_silly_token' }
-  let(:client) { FolioClient.configure(**args) }
+  let(:client) { FolioClient.instance }
   let(:id) { 'some_long_id_that_is_long' }
   let(:query) { '"active=="true"' }
-
   let(:users_response) do
     { 'users' =>
     [{ 'username' => 'user',
@@ -61,6 +60,8 @@ RSpec.describe FolioClient::Users do
   end
 
   before do
+    FolioClient.configure(**args)
+
     stub_request(:post, "#{url}/authn/login")
       .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
   end

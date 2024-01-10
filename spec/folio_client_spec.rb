@@ -252,7 +252,7 @@ RSpec.describe FolioClient do
     let(:external_id) { '5108040a-65bc-40ed-bd50-265958301ce4' }
 
     before do
-      allow(described_class::Inventory).to receive(:new).with(client).and_return(inventory)
+      allow(described_class::Inventory).to receive(:new).and_return(inventory)
       allow(inventory).to receive(:fetch_external_id).with(hrid: hrid).and_return(external_id)
     end
 
@@ -286,7 +286,7 @@ RSpec.describe FolioClient do
     end
 
     before do
-      allow(described_class::Inventory).to receive(:new).with(client).and_return(inventory)
+      allow(described_class::Inventory).to receive(:new).and_return(inventory)
       allow(inventory).to receive(:fetch_instance_info).with(external_id: external_id).and_return(instance_info)
     end
 
@@ -695,7 +695,7 @@ RSpec.describe FolioClient do
     end
 
     before do
-      allow(described_class::RecordsEditor).to receive(:new).with(client).and_return(records_editor)
+      allow(described_class::RecordsEditor).to receive(:new).and_return(records_editor)
       allow(records_editor).to receive(:edit_marc_json).and_yield(mock_marc_json)
     end
 

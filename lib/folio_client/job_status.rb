@@ -10,10 +10,8 @@ class FolioClient
 
     attr_reader :job_execution_id
 
-    # @param client [FolioClient] the configured client
     # @param job_execution_id [String] ID of the job to be checked on
-    def initialize(client, job_execution_id:)
-      @client = client
+    def initialize(job_execution_id:)
       @job_execution_id = job_execution_id
     end
 
@@ -59,7 +57,9 @@ class FolioClient
 
     private
 
-    attr_reader :client
+    def client
+      FolioClient.instance
+    end
 
     def default_wait_secs
       1

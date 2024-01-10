@@ -8,11 +8,6 @@ class FolioClient
   class DataImport
     JOB_PROFILE_ATTRIBUTES = %w[id name description dataType].freeze
 
-    # @param client [FolioClient] the configured client
-    def initialize(client)
-      @client = client
-    end
-
     # @param records [Array<MARC::Record>] records to be imported
     # @param job_profile_id [String] job profile id to use for import
     # @param job_profile_name [String] job profile name to use for import
@@ -42,7 +37,7 @@ class FolioClient
         }
       )
 
-      JobStatus.new(client, job_execution_id: job_execution_id)
+      JobStatus.new(job_execution_id: job_execution_id)
     end
     # rubocop:enable Metrics/MethodLength
 
@@ -56,7 +51,11 @@ class FolioClient
 
     private
 
-    attr_reader :client, :job_profile_id, :job_profile_name
+    attr_reader :job_profile_id, :job_profile_name
+
+    def client
+      FolioClient.instance
+    end
 
     def marc_filename
       @marc_filename ||= "#{DateTime.now.iso8601}.marc"

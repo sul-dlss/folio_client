@@ -5,13 +5,6 @@ class FolioClient
   # https://s3.amazonaws.com/foliodocs/api/mod-organizations/p/organizations.html
   # https://s3.amazonaws.com/foliodocs/api/mod-organizations-storage/p/interface.html
   class Organizations
-    attr_accessor :client
-
-    # @param client [FolioClient] the configured client
-    def initialize(client)
-      @client = client
-    end
-
     # @param query [String] an optional query to limit the number of organizations returned
     # @param limit [Integer] the number of results to return (defaults to 10,000)
     # @param offset [Integer] the offset for results returned (defaults to 0)
@@ -38,6 +31,12 @@ class FolioClient
       client.get("/organizations-storage/interfaces/#{id}", {
                    lang: lang
                  })
+    end
+
+    private
+
+    def client
+      FolioClient.instance
     end
   end
 end

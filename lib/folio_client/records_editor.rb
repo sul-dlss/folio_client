@@ -3,13 +3,6 @@
 class FolioClient
   # Edit MARC JSON records in Folio
   class RecordsEditor
-    attr_accessor :client
-
-    # @param client [FolioClient] the configured client
-    def initialize(client)
-      @client = client
-    end
-
     # Given an HRID, retrieves the associated MARC JSON, yields it to the caller as a hash,
     # and attempts to re-save it, using optimistic locking to prevent accidental overwrite,
     # in case another user or process has updated the record in the time between retrieval and
@@ -39,6 +32,12 @@ class FolioClient
       yield record_json
 
       client.put("/records-editor/records/#{parsed_record_id}", record_json)
+    end
+
+    private
+
+    def client
+      FolioClient.instance
     end
   end
 end

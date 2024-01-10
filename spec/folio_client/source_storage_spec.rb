@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::SourceStorage do
-  subject(:source_storage) { described_class.new(client) }
+  subject(:source_storage) { described_class.new }
 
   let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'aLongSTring.eNCodinga.JwTeeeee' }
-  let(:client) { FolioClient.configure(**args) }
+  let(:client) { FolioClient.instance }
   let(:instance_hrid) { 'a666' }
   let(:search_instance_response) do
     { 'totalRecords' => 1,
@@ -119,6 +119,8 @@ RSpec.describe FolioClient::SourceStorage do
   end
 
   before do
+    FolioClient.configure(**args)
+
     # the client is initialized with a fake token (see comment in FolioClient.configure for why).  this
     # simulates the initial obtainment of a valid token after FolioClient makes the very first post-initialization request.
     stub_request(:get, "#{url}/search/instances?query=hrid==in808")
@@ -261,7 +263,7 @@ RSpec.describe FolioClient::SourceStorage do
       end
 
       before do
-        allow(source_storage.client).to receive(:fetch_hrid).and_return(nil)
+        allow(source_storage.send(:client)).to receive(:fetch_hrid).and_return(nil)
       end
 
       it 'raises ResourceNotFound' do
