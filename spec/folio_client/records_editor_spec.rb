@@ -12,7 +12,8 @@ RSpec.describe FolioClient::RecordsEditor do
   let(:hrid) { 'in00000000067' }
   let(:external_id) { '5108040a-65bc-40ed-bd50-265958301ce4' }
   let(:mock_response_json) do
-    { 'parsedRecordId' => '1ab23862-46db-4da9-af5b-633adbf5f90f',
+    { '_actionType' => 'view',
+      'parsedRecordId' => '1ab23862-46db-4da9-af5b-633adbf5f90f',
       'parsedRecordDtoId' => '1281ae0b-548b-49e3-b740-050f28e6d57f',
       'suppressDiscovery' => false,
       'marcFormat' => 'BIBLIOGRAPHIC',
@@ -113,7 +114,8 @@ RSpec.describe FolioClient::RecordsEditor do
     end
     expect(client).to have_received(:put).with(
       "/records-editor/records/#{mock_response_json['parsedRecordId']}",
-      hash_including({ 'parsedRecordId' => '1ab23862-46db-4da9-af5b-633adbf5f90f',
+      hash_including({ '_actionType' => 'edit',
+                       'parsedRecordId' => '1ab23862-46db-4da9-af5b-633adbf5f90f',
                        'parsedRecordDtoId' => '1281ae0b-548b-49e3-b740-050f28e6d57f',
                        'relatedRecordVersion' => 1,
                        'externalId' => '5108040a-65bc-40ed-bd50-265958301ce4',
