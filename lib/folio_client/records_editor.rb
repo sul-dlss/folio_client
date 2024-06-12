@@ -28,6 +28,7 @@ class FolioClient
       parsed_record_id = record_json['parsedRecordId']
       # setting this field on the JSON we send back is what will allow optimistic locking to catch stale updates
       record_json['relatedRecordVersion'] = version
+      record_json['_actionType'] = 'edit'
 
       yield record_json
 
