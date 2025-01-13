@@ -291,7 +291,7 @@ class FolioClient
     response = yield
 
     # if unauthorized, token has likely expired. try to get a new token and then retry the same request(s).
-    if response.status == 401 || response.status == 403
+    if [401, 403].include?(response.status)
       force_token_refresh!
       response = yield
     end

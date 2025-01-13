@@ -452,7 +452,7 @@ RSpec.describe FolioClient do
     end
 
     it 'invokes Inventory#has_instance_status?' do
-      client.public_send(:has_instance_status?, hrid: hrid, status_id: status_id)
+      client.has_instance_status?(hrid: hrid, status_id: status_id)
       expect(inventory).to have_received(:has_instance_status?).once
     end
   end
@@ -477,7 +477,7 @@ RSpec.describe FolioClient do
     end
 
     it 'invokes Organizations#fetch_list' do
-      client.public_send(:organizations)
+      client.organizations
       expect(organizations).to have_received(:fetch_list).once
     end
   end
@@ -502,7 +502,7 @@ RSpec.describe FolioClient do
     end
 
     it 'invokes Organizations#fetch_interface_list' do
-      client.public_send(:organization_interfaces, query: 'something')
+      client.organization_interfaces(query: 'something')
       expect(organizations).to have_received(:fetch_interface_list).with(query: 'something').once
     end
   end
@@ -527,7 +527,7 @@ RSpec.describe FolioClient do
     end
 
     it 'invokes Organizations#fetch_interface_details' do
-      client.public_send(:interface_details, id: 'something')
+      client.interface_details(id: 'something')
       expect(organizations).to have_received(:fetch_interface_details).with(id: 'something').once
     end
   end
@@ -552,7 +552,7 @@ RSpec.describe FolioClient do
     end
 
     it 'invokes Users#fetch_list' do
-      client.public_send(:users)
+      client.users
       expect(users).to have_received(:fetch_list).once
     end
   end
@@ -577,7 +577,7 @@ RSpec.describe FolioClient do
     end
 
     it 'invokes Users#fetch_user_details' do
-      client.public_send(:user_details, id: 'something')
+      client.user_details(id: 'something')
       expect(users).to have_received(:fetch_user_details).with(id: 'something').once
     end
   end
