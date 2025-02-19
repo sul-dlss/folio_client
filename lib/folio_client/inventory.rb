@@ -25,7 +25,7 @@ class FolioClient
     def fetch_external_id(hrid:)
       instance_response = client.get('/search/instances', { query: "hrid==#{hrid}" })
       record_count = instance_response['totalRecords']
-      raise ResourceNotFound, "No matching instance found for #{hrid}" if (instance_response['totalRecords']).zero?
+      raise ResourceNotFound, "No matching instance found for #{hrid}" if instance_response['totalRecords'].zero?
       raise MultipleResourcesFound, "Expected 1 record for #{hrid}, but found #{record_count}" if record_count > 1
 
       instance_response.dig('instances', 0, 'id')
@@ -53,7 +53,7 @@ class FolioClient
     def has_instance_status?(hrid:, status_id:) # rubocop:disable Naming/PredicateName
       # get the instance record and its statusId
       instance = client.get('/inventory/instances', { query: "hrid==#{hrid}" })
-      raise ResourceNotFound, "No matching instance found for #{hrid}" if (instance['totalRecords']).zero?
+      raise ResourceNotFound, "No matching instance found for #{hrid}" if instance['totalRecords'].zero?
 
       instance_status_id = instance.dig('instances', 0, 'statusId')
 
