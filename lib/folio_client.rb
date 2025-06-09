@@ -203,7 +203,7 @@ class FolioClient
   end
 
   # @see Inventory#has_instance_status?
-  def has_instance_status?(...) # rubocop:disable Naming/PredicateName
+  def has_instance_status?(...) # rubocop:disable Naming/PredicatePrefix
     Inventory
       .new
       .has_instance_status?(...)

@@ -1,9 +1,7 @@
-require:
+plugins:
   - rubocop-capybara
   - rubocop-factory_bot
   - rubocop-rspec_rails
-
-plugins:
   - rubocop-performance
   - rubocop-rspec
 
@@ -421,4 +419,27 @@ Style/HashSlice: # new in 1.71
 Style/RedundantFormat: # new in 1.72
   Enabled: true
 Performance/ZipWithoutBlock: # new in 1.24
+  Enabled: true
+
+Lint/UselessDefaultValueArgument: # new in 1.76
+  Enabled: true
+Lint/UselessOr: # new in 1.76
+  Enabled: true
+Naming/PredicateMethod: # new in 1.76
+  Enabled: true
+Style/ComparableBetween: # new in 1.74
+  Enabled: true
+Style/EmptyStringInsideInterpolation: # new in 1.76
+  Enabled: true
+Style/HashFetchChain: # new in 1.75
+  Enabled: true
+Style/ItBlockParameter: # new in 1.75
+  Enabled: true
+Style/RedundantArrayFlatten: # new in 1.76
+  Enabled: true
+RSpec/IncludeExamples: # new in 3.6
+  Enabled: true
+Capybara/FindAllFirst: # new in 2.22
+  Enabled: true
+Capybara/NegationMatcherAfterVisit: # new in 2.22
   Enabled: true

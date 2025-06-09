@@ -50,7 +50,7 @@ class FolioClient
     # @param status_id [String] uuid for an instance status code
     # @return true if instance status matches the uuid param, false otherwise
     # @raise [ResourceNotFound] if search by instance HRID returns 0 results
-    def has_instance_status?(hrid:, status_id:) # rubocop:disable Naming/PredicateName
+    def has_instance_status?(hrid:, status_id:) # rubocop:disable Naming/PredicatePrefix
       # get the instance record and its statusId
       instance = client.get('/inventory/instances', { query: "hrid==#{hrid}" })
       raise ResourceNotFound, "No matching instance found for #{hrid}" if instance['totalRecords'].zero?
