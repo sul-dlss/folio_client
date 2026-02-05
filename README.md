@@ -25,10 +25,10 @@ require 'folio_client'
 
 # this will configure the client and request an access token
 client = FolioClient.configure(
-    url: 'https://okapi-dev.stanford.edu',
-    login_params: { username: 'xxx', password: 'yyy' },
-    okapi_headers: { 'X-Okapi-Tenant': 'sul', 'User-Agent': 'FolioApiClient' }
-)
+           url: 'https://okapi-dev.stanford.edu',
+           login_params: { username: 'xxx', password: 'yyy', legacy_auth: false },
+           okapi_headers: { 'X-Okapi-Tenant': 'sul', 'User-Agent': 'FolioApiClient' }
+         )
 
 response = client.get('/organizations/organizations', {query_string_param: 'abcdef'})
 
@@ -44,7 +44,7 @@ client = FolioClient.configure(
     url: Settings.okapi.url,
     login_params: Settings.okapi.login_params,
     okapi_headers: Settings.okapi.headers,
-    legacy_auth: true # consumers should leave set to true (default) until /login-with-expiry endpoint enabled in Poppy
+    legacy_auth: false # was true pre-Poppy release
 )
 ```
 
