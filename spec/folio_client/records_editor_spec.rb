@@ -8,6 +8,9 @@ RSpec.describe FolioClient::RecordsEditor do
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'aLongSTring.eNCodinga.JwTeeeee' }
+  let(:cookie_headers) do
+    { 'Set-Cookie': "folioAccessToken=#{token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
+  end
   let(:client) { FolioClient.instance }
   let(:hrid) { 'in00000000067' }
   let(:external_id) { '5108040a-65bc-40ed-bd50-265958301ce4' }
@@ -96,8 +99,8 @@ RSpec.describe FolioClient::RecordsEditor do
   before do
     FolioClient.configure(**args)
 
-    stub_request(:post, "#{url}/authn/login")
-      .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
+    stub_request(:post, "#{url}/authn/login-with-expiry")
+      .to_return(status: 200, headers: cookie_headers)
     allow(client).to receive(:fetch_instance_info).with(hrid: hrid).and_return({ '_version' => 1, 'id' => external_id })
     allow(client).to receive(:get).with('/records-editor/records',
                                         { externalId: external_id }).and_return(mock_response_json)
