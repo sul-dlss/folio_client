@@ -11,7 +11,10 @@ RSpec.describe FolioClient do
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
-  let(:token) { 'a_long_silly_token' }
+  let(:cookie_headers) do
+    { 'Set-Cookie': "folioAccessToken=#{token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
+  end
+  let(:token) { 'a_folio_access_token' }
   let(:search_instance_response) do
     { 'totalRecords' => 1,
       'instances' => [
@@ -28,9 +31,8 @@ RSpec.describe FolioClient do
     # simulates the initial obtainment of a valid token after FolioClient makes the very first post-initialization request.
     stub_request(:get, "#{url}/search/instances?query=hrid==in808")
       .to_return({ status: 401 }, { status: 200, body: search_instance_response.to_json })
-    stub_request(:post, "#{url}/authn/login")
-      .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
-
+    stub_request(:post, "#{url}/authn/login-with-expiry")
+      .to_return(status: 200, headers: cookie_headers)
     client.fetch_external_id(hrid: 'in808')
   end
 
@@ -64,10 +66,13 @@ RSpec.describe FolioClient do
 
   describe '#force_token_refresh!' do
     let(:refreshed_token) { 'another dummy token value' }
+    let(:refreshed_cookie_headers) do
+      { 'Set-Cookie': "folioAccessToken=#{refreshed_token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
+    end
 
     before do
-      stub_request(:post, "#{url}/authn/login")
-        .to_return(status: 200, body: "{\"okapiToken\" : \"#{refreshed_token}\"}")
+      stub_request(:post, "#{url}/authn/login-with-expiry")
+        .to_return(status: 200, headers: refreshed_cookie_headers)
     end
 
     it 'forces a token refresh' do
@@ -105,7 +110,7 @@ RSpec.describe FolioClient do
               'Accept' => 'application/json, text/plain',
               'Content-Type' => 'application/json',
               'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_long_silly_token'
+              'X-Okapi-Token' => 'a_folio_access_token'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -124,7 +129,7 @@ RSpec.describe FolioClient do
             headers: {
               'Accept' => 'application/json, text/plain',
               'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_long_silly_token'
+              'X-Okapi-Token' => 'a_folio_access_token'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -144,7 +149,7 @@ RSpec.describe FolioClient do
               'Accept' => 'application/json, text/plain',
               'Content-Type' => 'text/plain',
               'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_long_silly_token'
+              'X-Okapi-Token' => 'a_folio_access_token'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -169,7 +174,7 @@ RSpec.describe FolioClient do
               'Accept' => 'application/json, text/plain',
               'Content-Type' => 'application/json',
               'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_long_silly_token'
+              'X-Okapi-Token' => 'a_folio_access_token'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -188,7 +193,7 @@ RSpec.describe FolioClient do
             headers: {
               'Accept' => 'application/json, text/plain',
               'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_long_silly_token'
+              'X-Okapi-Token' => 'a_folio_access_token'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -208,7 +213,7 @@ RSpec.describe FolioClient do
               'Accept' => 'application/json, text/plain',
               'Content-Type' => 'text/plain',
               'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_long_silly_token'
+              'X-Okapi-Token' => 'a_folio_access_token'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -589,6 +594,9 @@ RSpec.describe FolioClient do
     let(:hrid) { 'in56789' }
     let(:expired_token) { token }
     let(:new_token) { 'new_token' }
+    let(:refreshed_cookie_headers) do
+      { 'Set-Cookie': "folioAccessToken=#{new_token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
+    end
     let(:barcode) { '123456' }
     let(:instance_uuid) { 'd71e654b-ca5e-44c0-9621-ae86ffd528d3' }
     let(:inventory_instance_response) do
@@ -619,9 +627,9 @@ RSpec.describe FolioClient do
     end
 
     before do
-      stub_request(:post, "#{url}/authn/login")
+      stub_request(:post, "#{url}/authn/login-with-expiry")
         .to_return(
-          { status: 200, body: "{\"okapiToken\" : \"#{new_token}\"}" }
+          { status: 200, headers: refreshed_cookie_headers }
         )
       stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
         .with(headers: { 'x-okapi-token': expired_token })
@@ -643,42 +651,6 @@ RSpec.describe FolioClient do
         .to change(client.config, :token)
         .from(expired_token)
         .to(new_token)
-    end
-
-    context 'when using /login-with-expiry (not legacy auth)' do
-      let(:expired_token) { token }
-      let(:new_token) { 'new_token' }
-      let(:legacy_auth) { false }
-      let(:headers) do
-        { 'Set-Cookie': "folioAccessToken=#{new_token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
-      end
-
-      before do
-        stub_request(:post, "#{url}/authn/login-with-expiry")
-          .to_return(
-            { status: 200, headers: headers }
-          )
-        stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
-          .with(headers: { 'x-okapi-token': expired_token })
-          .to_return(
-            { status: 403 }
-          )
-        stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
-          .with(headers: { 'x-okapi-token': new_token })
-          .to_return(
-            { status: 200, body: search_instance_response.to_json }
-          )
-        stub_request(:get, "#{url}/inventory/instances/#{instance_uuid}")
-          .with(headers: { 'x-okapi-token': new_token })
-          .to_return(status: 200, body: inventory_instance_response.to_json)
-      end
-
-      it 'fetches new token and retries' do
-        expect { client.fetch_hrid(barcode: barcode) }
-          .to change(client.config, :token)
-          .from(expired_token)
-          .to(new_token)
-      end
     end
   end
 

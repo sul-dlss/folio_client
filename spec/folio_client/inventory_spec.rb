@@ -8,6 +8,9 @@ RSpec.describe FolioClient::Inventory do
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'a_long_silly_token' }
+  let(:cookie_headers) do
+    { 'Set-Cookie': "folioAccessToken=#{token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
+  end
   let(:client) { FolioClient.instance }
   let(:barcode) { '123456' }
   let(:instance_uuid) { 'some_long_uuid_that_is_long' }
@@ -16,8 +19,8 @@ RSpec.describe FolioClient::Inventory do
   before do
     FolioClient.configure(**args)
 
-    stub_request(:post, "#{url}/authn/login")
-      .to_return(status: 200, body: "{\"okapiToken\" : \"#{token}\"}")
+    stub_request(:post, "#{url}/authn/login-with-expiry")
+      .to_return(status: 200, headers: cookie_headers)
   end
 
   context 'when looking up a barcode' do

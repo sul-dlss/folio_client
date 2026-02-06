@@ -1,21 +1,25 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::Authenticator do
-  let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers, legacy_auth: legacy_auth } }
+  let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
   let(:okapi_headers) { { some_bogus_headers: 'here' } }
-  let(:token) { 'a_long_silly_token' }
   let(:connection) { FolioClient.connection }
-  let(:http_status) { 200 }
   let(:http_body) { "{\"okapiToken\" : \"#{token}\"}" }
-  let(:legacy_auth) { true }
   let(:cookie_jar) { FolioClient.cookie_jar }
+  let(:http_status) { 201 }
+  let(:token) { 'a_token_4567' }
+  # rubocop:disable Layout/LineLength
+  let(:headers) do
+    { 'Set-Cookie': 'folioAccessToken=a_token_4567; Max-Age=600; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None, folioRefreshToken=blah; Max-Age=604800; Expires=Fri, 29 Sep 2050 14:20:10 GMT; Max-Age=604800; Path=/; Secure; HTTPOnly; SameSite=None' }
+  end
+  # Faraday concatenates multiple same headers using a comma https://github.com/lostisland/faraday/issues/1120
+  # rubocop:enable Layout/LineLength
 
   before do
     FolioClient.configure(**args)
-
-    stub_request(:post, "#{url}/authn/login").to_return(status: http_status, body: http_body)
+    stub_request(:post, "#{url}/authn/login-with-expiry").to_return(status: http_status, headers: headers)
   end
 
   describe '.token' do
@@ -95,28 +99,7 @@ RSpec.describe FolioClient::Authenticator do
       end
     end
 
-    context 'when not using legacy auth' do
-      let(:legacy_auth) { false }
-      let(:http_status) { 201 }
-      let(:token) { 'a_token_4567' }
-      # rubocop:disable Layout/LineLength
-      let(:headers) do
-        { 'Set-Cookie': 'folioAccessToken=a_token_4567; Max-Age=600; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None, folioRefreshToken=blah; Max-Age=604800; Expires=Fri, 29 Sep 2050 14:20:10 GMT; Max-Age=604800; Path=/; Secure; HTTPOnly; SameSite=None' }
-      end
-      # Faraday concatenates multiple same headers using a comma https://github.com/lostisland/faraday/issues/1120
-      # rubocop:enable Layout/LineLength
-
-      before do
-        stub_request(:post, "#{url}/authn/login-with-expiry").to_return(status: http_status, headers: headers)
-      end
-
-      it 'parses the token from the response' do
-        expect(authenticator.token).to eq(token)
-      end
-    end
-
     context 'when there is a problem with the cookie' do
-      let(:legacy_auth) { false }
       let(:http_status) { 201 }
       let(:token) { nil }
       let(:headers) do

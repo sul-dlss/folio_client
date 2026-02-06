@@ -50,9 +50,8 @@ class FolioClient
     # @param url [String] the folio API URL
     # @param login_params [Hash] the folio client login params (username:, password:)
     # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
-    # @param legacy_auth [Boolean] true to use legacy /login rather than Poppy /login-with-expiry endpoint
     # @return [FolioClient] the configured Singleton class
-    def configure(url:, login_params:, okapi_headers:, timeout: default_timeout, legacy_auth: true)
+    def configure(url:, login_params:, okapi_headers:, timeout: default_timeout, **)
       # rubocop:disable Style/OpenStructUse
       instance.config = OpenStruct.new(
         # For the initial token, use a dummy value to avoid hitting any APIs
@@ -69,8 +68,7 @@ class FolioClient
         url: url,
         login_params: login_params,
         okapi_headers: okapi_headers,
-        timeout: timeout,
-        legacy_auth: legacy_auth # default true until we have new token endpoint enabled in Poppy
+        timeout: timeout
       )
       # rubocop:enable Style/OpenStructUse
 

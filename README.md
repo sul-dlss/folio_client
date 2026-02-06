@@ -26,7 +26,7 @@ require 'folio_client'
 # this will configure the client and request an access token
 client = FolioClient.configure(
            url: 'https://okapi-dev.stanford.edu',
-           login_params: { username: 'xxx', password: 'yyy', legacy_auth: false },
+           login_params: { username: 'xxx', password: 'yyy' },
            okapi_headers: { 'X-Okapi-Tenant': 'sul', 'User-Agent': 'FolioApiClient' }
          )
 
@@ -44,7 +44,6 @@ client = FolioClient.configure(
     url: Settings.okapi.url,
     login_params: Settings.okapi.login_params,
     okapi_headers: Settings.okapi.headers,
-    legacy_auth: false # was true pre-Poppy release
 )
 ```
 
