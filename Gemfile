@@ -5,4 +5,4 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in folio_client.gemspec
 gemspec
 
-gem 'byebug'
+gem 'debug'
