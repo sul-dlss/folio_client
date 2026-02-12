@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'faraday'
   spec.add_dependency 'faraday-cookie_jar'
   spec.add_dependency 'marc'
+  spec.add_dependency 'ostruct'
   spec.add_dependency 'zeitwerk'
 
   spec.add_development_dependency 'rake', '~> 13.0'
