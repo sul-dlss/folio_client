@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.summary = 'Interface for interacting with the Folio ILS API.'
   spec.description = 'This provides API interaction with the Folio ILS API'
   spec.homepage = 'https://github.com/sul-dlss/folio_client'
-  spec.required_ruby_version = '>= 3.0.0'
+  spec.required_ruby_version = '>= 3.4'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/sul-dlss/folio_client'
