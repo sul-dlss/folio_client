@@ -64,6 +64,14 @@ class FolioClient
       false
     end
 
+    # Get location details by UUID
+    # @param location_id [String] UUID of the location
+    # @return [Hash] location data including campusId and other location information
+    # @raise [ResourceNotFound] if location with the given UUID is not found
+    def fetch_location(location_id:)
+      client.get("/locations/#{location_id}")
+    end
+
     private
 
     def client
