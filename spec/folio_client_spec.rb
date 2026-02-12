@@ -443,6 +443,55 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe '#fetch_holdings' do
+    let(:hrid) { 'in00000000067' }
+    let(:holdings_array) do
+      [
+        {
+          'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e',
+          'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
+          'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+          'discoverySuppress' => false,
+          'hrid' => 'ho00000000010',
+          'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
+          'callNumber' => 'ABC 123'
+        },
+        {
+          'id' => '8a89e96c-478c-4ca2-bb85-0a1c5b0c6f3f',
+          'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
+          'permanentLocationId' => 'b595d838-b1d5-409e-86ac-af3b41bde0be',
+          'discoverySuppress' => true,
+          'hrid' => 'ho00000000011',
+          'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
+          'callNumber' => 'DEF 456'
+        }
+      ]
+    end
+    let(:search_instance_response) do
+      {
+        'totalRecords' => 1,
+        'instances' => [
+          {
+            'id' => '5108040a-65bc-40ed-bd50-265958301ce4',
+            'title' => 'TOPICS IN CONVEX OPTIMIZATION FOR MACHINE LEARNING',
+            'holdings' => holdings_array
+          }
+        ]
+      }
+    end
+
+    before do
+      stub_request(:get, "#{url}/search/instances?expandAll=true&query=hrid==#{hrid}")
+        .to_return(status: 200, body: search_instance_response.to_json)
+    end
+
+    it 'returns the holdings array for the instance' do
+      result = client.fetch_holdings(hrid: hrid)
+      expect(result).to eq(holdings_array)
+      expect(result.length).to eq(2)
+    end
+  end
+
   describe '.data_import' do
     let(:job_profile_id) { '4ba4f4ab' }
     let(:job_profile_name) { 'ETDs' }
