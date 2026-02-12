@@ -77,8 +77,6 @@ GEM
       uri (>= 0.11.1)
     nokogiri (1.19.0-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.19.0-x86_64-darwin)
-      racc (~> 1.4)
     nokogiri (1.19.0-x86_64-linux-gnu)
       racc (~> 1.4)
     parallel (1.27.0)
@@ -161,10 +159,7 @@ GEM
 PLATFORMS
   arm64-darwin-23
   arm64-darwin-24
-  x86_64-darwin-19
-  x86_64-darwin-20
-  x86_64-darwin-21
-  x86_64-darwin-22
+  arm64-darwin-25
   x86_64-linux
 
 DEPENDENCIES
