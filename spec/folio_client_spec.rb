@@ -373,6 +373,76 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe '.fetch_location' do
+    let(:location_id) { 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231' }
+    let(:location_response) do
+      {
+        'id' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+        'name' => 'Miller General Stacks',
+        'code' => 'UA/CB/LC/GS',
+        'isActive' => true,
+        'description' => 'The very general stacks of Miller',
+        'discoveryDisplayName' => 'Miller General',
+        'institutionId' => '4b2a3d97-01c3-4ef3-98a5-ae4e853429b4',
+        'campusId' => 'b595d838-b1d5-409e-86ac-af3b41bde0be',
+        'libraryId' => 'e2889f93-92f2-4937-b944-5452a575367e',
+        'details' => {
+          'a' => 'b',
+          'foo' => 'bar'
+        },
+        'primaryServicePoint' => '79faacf1-4ba4-42c7-8b2a-566b259e4641',
+        'servicePointIds' => [
+          '79faacf1-4ba4-42c7-8b2a-566b259e4641'
+        ]
+      }
+    end
+
+    before do
+      allow(described_class.instance).to receive(:fetch_location).with(location_id:).and_return(location_response)
+    end
+
+    it 'invokes instance#fetch_location and passes along the return value' do
+      expect(client.fetch_location(location_id:)).to eq location_response
+      expect(client.instance).to have_received(:fetch_location).with(location_id:)
+    end
+  end
+
+  describe '#fetch_location' do
+    let(:location_id) { 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231' }
+    let(:location_response) do
+      {
+        'id' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+        'name' => 'Miller General Stacks',
+        'code' => 'UA/CB/LC/GS',
+        'isActive' => true,
+        'description' => 'The very general stacks of Miller',
+        'discoveryDisplayName' => 'Miller General',
+        'institutionId' => '4b2a3d97-01c3-4ef3-98a5-ae4e853429b4',
+        'campusId' => 'b595d838-b1d5-409e-86ac-af3b41bde0be',
+        'libraryId' => 'e2889f93-92f2-4937-b944-5452a575367e',
+        'details' => {
+          'a' => 'b',
+          'foo' => 'bar'
+        },
+        'primaryServicePoint' => '79faacf1-4ba4-42c7-8b2a-566b259e4641',
+        'servicePointIds' => [
+          '79faacf1-4ba4-42c7-8b2a-566b259e4641'
+        ]
+      }
+    end
+
+    before do
+      stub_request(:get, "#{url}/locations/#{location_id}")
+        .to_return(status: 200, body: location_response.to_json)
+    end
+
+    it 'fetches location data including campusId' do
+      result = client.fetch_location(location_id: location_id)
+      expect(result).to eq(location_response)
+      expect(result['campusId']).to eq('b595d838-b1d5-409e-86ac-af3b41bde0be')
+    end
+  end
+
   describe '.data_import' do
     let(:job_profile_id) { '4ba4f4ab' }
     let(:job_profile_name) { 'ETDs' }

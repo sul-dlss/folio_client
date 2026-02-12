@@ -163,6 +163,22 @@ client.user_details(id: 'bbbadd51-c2f1-4107-a54d-52b39087725c')
 => {"username"=>"testing",
     "id"=>"bbbadd51-c2f1-4107-a54d-52b39087725c",
     "externalSystemId"=>"00324439", ... # same response as above, but for single user
+
+# Get location details by UUID (useful for checking campusId when creating holdings)
+# see https://s3.amazonaws.com/foliodocs/api/mod-inventory-storage/p/location.html#locations__id__get
+client.fetch_location(location_id: 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231')
+=> {"id"=>"d9cd0bed-1b49-4b5e-a7bd-064b8d177231",
+    "name"=>"Miller General Stacks",
+    "code"=>"UA/CB/LC/GS",
+    "isActive"=>true,
+    "description"=>"The very general stacks of Miller",
+    "discoveryDisplayName"=>"Miller General",
+    "institutionId"=>"4b2a3d97-01c3-4ef3-98a5-ae4e853429b4",
+    "campusId"=>"b595d838-b1d5-409e-86ac-af3b41bde0be",
+    "libraryId"=>"e2889f93-92f2-4937-b944-5452a575367e",
+    "details"=>{"a"=>"b", "foo"=>"bar"},
+    "primaryServicePoint"=>"79faacf1-4ba4-42c7-8b2a-566b259e4641",
+    "servicePointIds"=>["79faacf1-4ba4-42c7-8b2a-566b259e4641"]}
 ```
 
 ## Development
