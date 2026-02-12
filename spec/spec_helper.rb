@@ -11,7 +11,7 @@ SimpleCov.start do
   end
 end
 
-require 'byebug'
+require 'debug'
 require 'folio_client'
 require 'webmock/rspec'
 
