@@ -76,7 +76,7 @@ class FolioClient
     end
 
     delegate :config, :connection, :cookie_jar, :data_import, :default_timeout,
-             :edit_marc_json, :fetch_external_id, :fetch_hrid,
+             :edit_marc_json, :fetch_external_id, :fetch_holdings, :fetch_hrid,
              :fetch_instance_info, :fetch_location, :fetch_marc_hash, :fetch_marc_xml,
              :force_token_refresh!, :get, :has_instance_status?,
              :http_get_headers, :http_post_and_put_headers, :interface_details,
@@ -191,6 +191,13 @@ class FolioClient
     Inventory
       .new
       .fetch_location(...)
+  end
+
+  # @see Inventory#fetch_holdings
+  def fetch_holdings(...)
+    Inventory
+      .new
+      .fetch_holdings(...)
   end
 
   # @see SourceStorage#fetch_marc_hash

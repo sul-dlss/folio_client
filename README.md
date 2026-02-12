@@ -179,6 +179,24 @@ client.fetch_location(location_id: 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231')
     "details"=>{"a"=>"b", "foo"=>"bar"},
     "primaryServicePoint"=>"79faacf1-4ba4-42c7-8b2a-566b259e4641",
     "servicePointIds"=>["79faacf1-4ba4-42c7-8b2a-566b259e4641"]}
+
+# Get holdings records for an instance by HRID (useful for checking permanentLocationId and discoverySuppress)
+# see https://github.com/folio-org/mod-search#search-api
+client.fetch_holdings(hrid: 'in00000000067')
+=> [{"id"=>"7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e",
+     "instanceId"=>"5108040a-65bc-40ed-bd50-265958301ce4",
+     "permanentLocationId"=>"d9cd0bed-1b49-4b5e-a7bd-064b8d177231",
+     "discoverySuppress"=>false,
+     "hrid"=>"ho00000000010",
+     "holdingsTypeId"=>"03c9c400-b9e3-4a07-ac0e-05ab470233ed",
+     "callNumber"=>"ABC 123"},
+    {"id"=>"8a89e96c-478c-4ca2-bb85-0a1c5b0c6f3f",
+     "instanceId"=>"5108040a-65bc-40ed-bd50-265958301ce4",
+     "permanentLocationId"=>"b595d838-b1d5-409e-86ac-af3b41bde0be",
+     "discoverySuppress"=>true,
+     "hrid"=>"ho00000000011",
+     "holdingsTypeId"=>"03c9c400-b9e3-4a07-ac0e-05ab470233ed",
+     "callNumber"=>"DEF 456"}]
 ```
 
 ## Development

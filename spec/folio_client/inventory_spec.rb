@@ -367,4 +367,133 @@ RSpec.describe FolioClient::Inventory do
       end
     end
   end
+
+  describe '#fetch_holdings' do
+    let(:hrid) { 'in00000000067' }
+    let(:holdings_array) do
+      [
+        {
+          'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e',
+          'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
+          'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+          'discoverySuppress' => false,
+          'hrid' => 'ho00000000010',
+          'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
+          'callNumber' => 'ABC 123'
+        },
+        {
+          'id' => '8a89e96c-478c-4ca2-bb85-0a1c5b0c6f3f',
+          'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
+          'permanentLocationId' => 'b595d838-b1d5-409e-86ac-af3b41bde0be',
+          'discoverySuppress' => true,
+          'hrid' => 'ho00000000011',
+          'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
+          'callNumber' => 'DEF 456'
+        }
+      ]
+    end
+    let(:search_instance_response) do
+      {
+        'totalRecords' => 1,
+        'instances' => [
+          {
+            'id' => '5108040a-65bc-40ed-bd50-265958301ce4',
+            'title' => 'TOPICS IN CONVEX OPTIMIZATION FOR MACHINE LEARNING',
+            'holdings' => holdings_array
+          }
+        ]
+      }
+    end
+
+    before do
+      stub_request(:get, "#{url}/search/instances?expandAll=true&query=hrid==#{hrid}")
+        .to_return(status: 200, body: search_instance_response.to_json)
+    end
+
+    it 'returns the holdings array for the instance' do
+      result = inventory.fetch_holdings(hrid: hrid)
+      expect(result).to eq(holdings_array)
+      expect(result.length).to eq(2)
+    end
+
+    it 'includes permanentLocationId in holdings' do
+      result = inventory.fetch_holdings(hrid: hrid)
+      expect(result.first['permanentLocationId']).to eq('d9cd0bed-1b49-4b5e-a7bd-064b8d177231')
+    end
+
+    it 'includes discoverySuppress field in holdings' do
+      result = inventory.fetch_holdings(hrid: hrid)
+      expect(result.first['discoverySuppress']).to be false
+      expect(result.last['discoverySuppress']).to be true
+    end
+
+    context 'when instance has no holdings' do
+      let(:search_instance_response) do
+        {
+          'totalRecords' => 1,
+          'instances' => [
+            {
+              'id' => '5108040a-65bc-40ed-bd50-265958301ce4',
+              'title' => 'TOPICS IN CONVEX OPTIMIZATION FOR MACHINE LEARNING',
+              'holdings' => []
+            }
+          ]
+        }
+      end
+
+      it 'returns an empty array' do
+        expect(inventory.fetch_holdings(hrid: hrid)).to eq([])
+      end
+    end
+
+    context 'when holdings key is missing' do
+      let(:search_instance_response) do
+        {
+          'totalRecords' => 1,
+          'instances' => [
+            {
+              'id' => '5108040a-65bc-40ed-bd50-265958301ce4',
+              'title' => 'TOPICS IN CONVEX OPTIMIZATION FOR MACHINE LEARNING'
+            }
+          ]
+        }
+      end
+
+      it 'returns an empty array' do
+        expect(inventory.fetch_holdings(hrid: hrid)).to eq([])
+      end
+    end
+
+    context 'when no instance is found' do
+      let(:search_instance_response) do
+        {
+          'totalRecords' => 0,
+          'instances' => []
+        }
+      end
+
+      it 'raises ResourceNotFound' do
+        expect do
+          inventory.fetch_holdings(hrid: hrid)
+        end.to raise_error(FolioClient::ResourceNotFound,
+                           "No matching instance found for #{hrid}")
+      end
+    end
+
+    context 'when multiple instances are found' do
+      let(:search_instance_response) do
+        {
+          'totalRecords' => 2,
+          'instances' => [nil, nil]
+        }
+      end
+
+      it 'raises MultipleResourcesFound' do
+        expect do
+          inventory.fetch_holdings(hrid: hrid)
+        end.to raise_error(FolioClient::MultipleResourcesFound,
+                           "Expected 1 record for #{hrid}, but found 2")
+      end
+    end
+  end
 end

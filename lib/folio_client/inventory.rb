@@ -72,6 +72,21 @@ class FolioClient
       client.get("/locations/#{location_id}")
     end
 
+    # Get holdings records for an instance by HRID
+    # @see https://github.com/folio-org/mod-search#search-api
+    # @param hrid [String] instance HRID
+    # @return [Array<Hash>] array of holdings records with permanentLocationId, discoverySuppress, and other fields
+    # @raise [ResourceNotFound] if search by instance HRID returns 0 results
+    # @raise [MultipleResourcesFound] if search returns more than 1 instance
+    def fetch_holdings(hrid:)
+      instance_response = client.get('/search/instances', { query: "hrid==#{hrid}", expandAll: true })
+      record_count = instance_response['totalRecords']
+      raise ResourceNotFound, "No matching instance found for #{hrid}" if record_count.zero?
+      raise MultipleResourcesFound, "Expected 1 record for #{hrid}, but found #{record_count}" if record_count > 1
+
+      instance_response.dig('instances', 0, 'holdings') || []
+    end
+
     private
 
     def client
