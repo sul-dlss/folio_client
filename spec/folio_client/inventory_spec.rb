@@ -496,4 +496,62 @@ RSpec.describe FolioClient::Inventory do
       end
     end
   end
+
+  describe '#update_holdings' do
+    let(:holdings_id) { '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e' }
+    let(:updated_record) do
+      {
+        'id' => holdings_id,
+        'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
+        'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+        'discoverySuppress' => false,
+        'hrid' => 'ho00000000010',
+        'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
+        'callNumber' => 'ABC 123'
+      }
+    end
+    let(:update_response) do
+      updated_record.merge('updatedDate' => '2023-03-15T12:00:00.000+0000')
+    end
+
+    before do
+      stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
+        .with(body: updated_record.to_json)
+        .to_return(status: 204, body: update_response.to_json)
+    end
+
+    it 'sends a PUT request to update the holdings record and returns the response' do
+      result = inventory.update_holdings(holdings_id: holdings_id, record: updated_record)
+      expect(result).to eq(update_response)
+    end
+
+    context 'when a bad holdings record is sent' do
+      before do
+        stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
+          .with(body: updated_record.to_json)
+          .to_return(status: 400, body: 'unable to update Holdings -- malformed JSON at 13:4')
+      end
+
+      it 'raises UnexpectedResponse' do
+        expect do
+          inventory.update_holdings(holdings_id: holdings_id, record: updated_record)
+        end.to raise_error(FolioClient::BadRequestError)
+      end
+    end
+
+    context 'when the holdings record is not found' do
+      before do
+        stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
+          .with(body: updated_record.to_json)
+          .to_return(status: 404, body: 'Holdings record not found')
+      end
+
+      it 'raises ResourceNotFound' do
+        expect do
+          inventory.update_holdings(holdings_id: holdings_id, record: updated_record)
+        end.to raise_error(FolioClient::ResourceNotFound,
+                           /Endpoint not found or resource does not exist/)
+      end
+    end
+  end
 end

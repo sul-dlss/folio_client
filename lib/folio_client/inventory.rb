@@ -73,18 +73,33 @@ class FolioClient
     end
 
     # Get holdings records for an instance by HRID
-    # @see https://github.com/folio-org/mod-search#search-api
+    # @see https://s3.amazonaws.com/foliodocs/api/mod-inventory-storage/p/inventory-view.html
     # @param hrid [String] instance HRID
-    # @return [Array<Hash>] array of holdings records with permanentLocationId, discoverySuppress, and other fields
-    # @raise [ResourceNotFound] if search by instance HRID returns 0 results
-    # @raise [MultipleResourcesFound] if search returns more than 1 instance
+    # @return [Array<Hash>] array of holdings records with permanentLocationId, _version, discoverySuppress, and other fields
     def fetch_holdings(hrid:)
-      instance_response = client.get('/search/instances', { query: "hrid==#{hrid}", expandAll: true })
-      record_count = instance_response['totalRecords']
-      raise ResourceNotFound, "No matching instance found for #{hrid}" if record_count.zero?
-      raise MultipleResourcesFound, "Expected 1 record for #{hrid}, but found #{record_count}" if record_count > 1
+      instance_uuid = fetch_external_id(hrid: hrid)
+      instance_response = client.get('/inventory-view/instances', { query: "id==#{instance_uuid}" })
 
-      instance_response.dig('instances', 0, 'holdings') || []
+      instance_response.dig('instances', 0, 'holdingsRecords') || []
+    end
+
+    # Put an updated holdings record
+    # @param holdings_id [String] UUID of the holdings record to update
+    # @param holdings_record [Hash] holdings record
+    # @return [Hash, nil] response body parsed as JSON, or nil if the response body is blank
+    # @raise [ResourceNotFound] if holdings record with the given UUID is not found
+    # @raise [BadRequestError] if the API returns a 400 Bad Request response, which may occur if the update includes invalid fields or values
+    # @raise [UnexpectedResponse] if the API returns some other error response
+    def update_holdings(holdings_id:, holdings_record:)
+      response = client.put("/inventory/holdings/#{holdings_id}", holdings_record, return_status: true)
+
+      raise ResourceNotFound, "Holdings record with ID #{holdings_id} not found" if response.status == 404
+      raise BadRequestError if response.status == 400
+      raise UnexpectedResponse, "Unexpected response from API: #{response.status} #{response.body}" unless response.success?
+
+      return nil if response.body.blank?
+
+      JSON.parse(response.body)
     end
 
     private
