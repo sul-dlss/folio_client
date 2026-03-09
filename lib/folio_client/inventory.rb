@@ -95,10 +95,13 @@ class FolioClient
 
       raise ResourceNotFound, "Holdings record with ID #{holdings_id} not found" if response.status == 404
       raise BadRequestError if response.status == 400
-      raise UnexpectedResponse, "Unexpected response from API: #{response.status} #{response.body}" unless response.success?
 
-      return nil if response.body.blank?
+      UnexpectedResponse.call(response) unless response.success?
 
+      # Successful update
+      return nil if response.status == 204
+
+      # Some other success response, which is unexpected but we want to return the message body if present
       JSON.parse(response.body)
     end
 

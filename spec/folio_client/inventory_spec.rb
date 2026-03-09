@@ -11,7 +11,6 @@ RSpec.describe FolioClient::Inventory do
   let(:cookie_headers) do
     { 'Set-Cookie': "folioAccessToken=#{token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
   end
-  let(:client) { FolioClient.instance }
   let(:barcode) { '123456' }
   let(:instance_uuid) { 'some_long_uuid_that_is_long' }
   let(:hrid) { 'a12854819' }
@@ -369,66 +368,80 @@ RSpec.describe FolioClient::Inventory do
   end
 
   describe '#fetch_holdings' do
-    let(:hrid) { 'in00000000067' }
-    let(:holdings_array) do
-      [
-        {
-          'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e',
-          'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
-          'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
-          'discoverySuppress' => false,
-          'hrid' => 'ho00000000010',
-          'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
-          'callNumber' => 'ABC 123'
-        },
-        {
-          'id' => '8a89e96c-478c-4ca2-bb85-0a1c5b0c6f3f',
-          'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
-          'permanentLocationId' => 'b595d838-b1d5-409e-86ac-af3b41bde0be',
-          'discoverySuppress' => true,
-          'hrid' => 'ho00000000011',
-          'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
-          'callNumber' => 'DEF 456'
-        }
-      ]
-    end
+    let(:hrid) { 'a1994253' }
+    let(:external_id) { '5108040a-65bc-40ed-bd50-265958301ce4' }
+    let(:holdings_id) { 'a5aa99e6-ae35-54e2-800d-2099895ea7cb' }
     let(:search_instance_response) do
-      {
+      { 'totalRecords' => 1,
+        'instances' =>
+        [{ 'id' => external_id,
+           'title' => "Old Possum's book of practical cats.",
+           'contributors' => [{ 'name' => 'Possum, Old',
+                                'contributorNameTypeId' => '2b94c631-fca9-4892-a730-03ee529ffe2a', 'primary' => true }],
+           'publication' => [{ 'publisher' => '[Stanford University]', 'dateOfPublication' => '2020' },
+                             { 'dateOfPublication' => '©2020' }],
+           'discoverySuppress' => false,
+           'electronicAccess' => [],
+           'holdings' => [] }] }
+    end
+    let(:instance_view_response) do
+      { 'instances' => [{ 'instanceId' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+                          'instance' => { 'id' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+                                          '_version' => 7,
+                                          'hrid' => 'a1994253',
+                                          'source' => 'MARC',
+                                          'title' => "... Old Possum's book of practical cats." },
+                          'holdingsRecords' => holdings_array }],
         'totalRecords' => 1,
-        'instances' => [
-          {
-            'id' => '5108040a-65bc-40ed-bd50-265958301ce4',
-            'title' => 'TOPICS IN CONVEX OPTIMIZATION FOR MACHINE LEARNING',
-            'holdings' => holdings_array
-          }
-        ]
-      }
+        'resultInfo' => { 'totalRecords' => 1 } }
+    end
+    let(:holdings_array) do
+      [{ 'id' => 'a5aa99e6-ae35-54e2-800d-2099895ea7cb',
+         '_version' => 1,
+         'sourceId' => 'f32d531e-df79-46b3-8932-cdd35f7a2264',
+         'hrid' => 'ah1994253_1',
+         'holdingsTypeId' => '5684e4a3-9279-4463-b6ee-20ae21bbec07',
+         'formerIds' => [],
+         'instanceId' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+         'permanentLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+         'effectiveLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+         'electronicAccess' => [],
+         'discoverySuppress' => false,
+         'callNumberTypeId' => '95467209-6d7b-468b-94df-0f5d7ad2747d',
+         'callNumber' => 'PS3509 .L43 O55 1944',
+         'metadata' => { 'createdDate' => '2023-08-21T02:15:06.454+00:00',
+                         'createdByUserId' => '58d0aaf6-dcda-4d5e-92da-012e6b7dd766',
+                         'updatedDate' => '2023-08-21T02:15:06.454+00:00',
+                         'updatedByUserId' => '58d0aaf6-dcda-4d5e-92da-012e6b7dd766' } }]
     end
 
     before do
-      stub_request(:get, "#{url}/search/instances?expandAll=true&query=hrid==#{hrid}")
+      stub_request(:get, "#{url}/search/instances?query=hrid==#{hrid}")
         .to_return(status: 200, body: search_instance_response.to_json)
+      stub_request(:get, "#{url}/inventory-view/instances?query=id==#{external_id}")
+        .to_return(status: 200, body: instance_view_response.to_json)
+      stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
+        .to_return(status: 204, body: '')
     end
 
     it 'returns the holdings array for the instance' do
       result = inventory.fetch_holdings(hrid: hrid)
       expect(result).to eq(holdings_array)
-      expect(result.length).to eq(2)
+      expect(result.length).to eq(1)
     end
 
     it 'includes permanentLocationId in holdings' do
       result = inventory.fetch_holdings(hrid: hrid)
-      expect(result.first['permanentLocationId']).to eq('d9cd0bed-1b49-4b5e-a7bd-064b8d177231')
+      expect(result.first['permanentLocationId']).to eq('4573e824-9273-4f13-972f-cff7bf504217')
     end
 
     it 'includes discoverySuppress field in holdings' do
       result = inventory.fetch_holdings(hrid: hrid)
       expect(result.first['discoverySuppress']).to be false
-      expect(result.last['discoverySuppress']).to be true
     end
 
     context 'when instance has no holdings' do
-      let(:search_instance_response) do
+      let(:instance_view_response) do
         {
           'totalRecords' => 1,
           'instances' => [
@@ -447,7 +460,7 @@ RSpec.describe FolioClient::Inventory do
     end
 
     context 'when holdings key is missing' do
-      let(:search_instance_response) do
+      let(:instance_view_response) do
         {
           'totalRecords' => 1,
           'instances' => [
@@ -484,7 +497,7 @@ RSpec.describe FolioClient::Inventory do
       let(:search_instance_response) do
         {
           'totalRecords' => 2,
-          'instances' => [nil, nil]
+          'instances' => [{ id: 'an_id' }, nil]
         }
       end
 
@@ -500,41 +513,40 @@ RSpec.describe FolioClient::Inventory do
   describe '#update_holdings' do
     let(:holdings_id) { '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e' }
     let(:updated_record) do
-      {
-        'id' => holdings_id,
-        'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
-        'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
-        'discoverySuppress' => false,
-        'hrid' => 'ho00000000010',
-        'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
-        'callNumber' => 'ABC 123'
-      }
-    end
-    let(:update_response) do
-      updated_record.merge('updatedDate' => '2023-03-15T12:00:00.000+0000')
+      { 'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e',
+        '_version' => 1,
+        'sourceId' => 'f32d531e-df79-46b3-8932-cdd35f7a2264',
+        'hrid' => 'ah1994253_1',
+        'holdingsTypeId' => '5684e4a3-9279-4463-b6ee-20ae21bbec07',
+        'instanceId' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+        'permanentLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+        'effectiveLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+        'discoverySuppress' => false }
     end
 
-    before do
-      stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
-        .with(body: updated_record.to_json)
-        .to_return(status: 204, body: update_response.to_json)
-    end
+    context 'when the holdings record is successfully updated' do
+      before do
+        stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
+          .with(body: updated_record.to_json)
+          .to_return(status: 204, body: '')
+      end
 
-    it 'sends a PUT request to update the holdings record and returns the response' do
-      result = inventory.update_holdings(holdings_id: holdings_id, record: updated_record)
-      expect(result).to eq(update_response)
+      it 'sends a PUT request to update the holdings record and returns the response' do
+        result = inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
+        expect(result).to be_nil
+      end
     end
 
     context 'when a bad holdings record is sent' do
       before do
         stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
           .with(body: updated_record.to_json)
-          .to_return(status: 400, body: 'unable to update Holdings -- malformed JSON at 13:4')
+          .to_return(status: 400, body: 'unable to update Holdings -- malformed JSON')
       end
 
       it 'raises UnexpectedResponse' do
         expect do
-          inventory.update_holdings(holdings_id: holdings_id, record: updated_record)
+          inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
         end.to raise_error(FolioClient::BadRequestError)
       end
     end
@@ -548,9 +560,22 @@ RSpec.describe FolioClient::Inventory do
 
       it 'raises ResourceNotFound' do
         expect do
-          inventory.update_holdings(holdings_id: holdings_id, record: updated_record)
+          inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
         end.to raise_error(FolioClient::ResourceNotFound,
-                           /Endpoint not found or resource does not exist/)
+                           /Holdings record with ID #{holdings_id} not found/)
+      end
+    end
+
+    context 'when a message body is returned' do
+      before do
+        stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
+          .with(body: updated_record.to_json)
+          .to_return(status: 200, body: { 'message' => 'Some other success message' }.to_json)
+      end
+
+      it 'returns the message' do
+        result = inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
+        expect(result).to eq({ 'message' => 'Some other success message' })
       end
     end
   end
