@@ -197,8 +197,20 @@ client.fetch_holdings(hrid: 'in00000000067')
      "hrid"=>"ho00000000011",
      "holdingsTypeId"=>"03c9c400-b9e3-4a07-ac0e-05ab470233ed",
      "callNumber"=>"DEF 456"}]
-```
 
+# Update a holdings record for an instance HRID
+holdings_record = 
+      { 'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e',
+        '_version' => 1,
+        'sourceId' => 'f32d531e-df79-46b3-8932-cdd35f7a2264',
+        'hrid' => 'ah1994253_1',
+        'holdingsTypeId' => '5684e4a3-9279-4463-b6ee-20ae21bbec07',
+        'instanceId' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+        'permanentLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+        'effectiveLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+        'discoverySuppress' => false }
+client.update_holdings(holdings_id: '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e', holdings_record:)
+```
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

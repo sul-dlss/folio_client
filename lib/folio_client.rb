@@ -41,6 +41,9 @@ class FolioClient
   # Error raised when the Folio API returns a 409 Conflict
   class ConflictError < Error; end
 
+  # Error raised when the Folio API returns a 400 Bad Request
+  class BadRequestError < Error; end
+
   DEFAULT_HEADERS = {
     accept: 'application/json, text/plain',
     content_type: 'application/json'
@@ -80,7 +83,7 @@ class FolioClient
              :fetch_instance_info, :fetch_location, :fetch_marc_hash, :fetch_marc_xml,
              :force_token_refresh!, :get, :has_instance_status?,
              :http_get_headers, :http_post_and_put_headers, :interface_details,
-             :job_profiles, :organization_interfaces, :organizations, :users,
+             :job_profiles, :organization_interfaces, :organizations, :update_holdings, :users,
              :user_details, :post, :put, to: :instance
   end
 
@@ -128,6 +131,7 @@ class FolioClient
   # If the body is JSON, it will be automatically serialized
   # @param path [String] the path to the Folio API request
   # @param body [Object] body to put to the API as JSON
+  # @return [Hash, Faraday::Response, nil] if a block is provided, the response object; otherwise parsed response body or nil
   # rubocop:disable Metrics/MethodLength
   def put(path, body = nil, content_type: 'application/json')
     req_body = content_type == 'application/json' ? body&.to_json : body
@@ -138,6 +142,8 @@ class FolioClient
       }
       connection.put(path, req_body, req_headers)
     end
+
+    return response if block_given?
 
     UnexpectedResponse.call(response) unless response.success?
 
@@ -198,6 +204,13 @@ class FolioClient
     Inventory
       .new
       .fetch_holdings(...)
+  end
+
+  # @see Inventory#update_holdings
+  def update_holdings(...)
+    Inventory
+      .new
+      .update_holdings(...)
   end
 
   # @see SourceStorage#fetch_marc_hash

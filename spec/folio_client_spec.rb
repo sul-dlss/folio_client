@@ -223,6 +223,29 @@ RSpec.describe FolioClient do
         expect(client.put(path, 'foobar', content_type: 'text/plain')).to eq(response)
       end
     end
+
+    context 'when called with a block' do
+      before do
+        stub_request(:put, "#{url}/#{path}")
+          .with(
+            body: '{"id":5}',
+            headers: {
+              'Accept' => 'application/json, text/plain',
+              'Content-Type' => 'application/json',
+              'Some-Bogus-Headers' => 'here',
+              'X-Okapi-Token' => 'a_folio_access_token'
+            }
+          )
+          .to_return(status: 204, body: response.to_json, headers: {})
+      end
+
+      it 'returns the response object' do
+        put_response = client.put(path, { id: 5 }) { true }
+
+        expect(put_response).to be_a(Faraday::Response)
+        expect(put_response.status).to eq(204)
+      end
+    end
   end
 
   describe '.fetch_hrid' do
@@ -452,20 +475,27 @@ RSpec.describe FolioClient do
           'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
           'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
           'discoverySuppress' => false,
-          'hrid' => 'ho00000000010',
-          'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
-          'callNumber' => 'ABC 123'
+          'hrid' => 'ho00000000010'
         },
         {
-          'id' => '8a89e96c-478c-4ca2-bb85-0a1c5b0c6f3f',
+          'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3f',
           'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
-          'permanentLocationId' => 'b595d838-b1d5-409e-86ac-af3b41bde0be',
-          'discoverySuppress' => true,
-          'hrid' => 'ho00000000011',
-          'holdingsTypeId' => '03c9c400-b9e3-4a07-ac0e-05ab470233ed',
-          'callNumber' => 'DEF 456'
+          'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+          'discoverySuppress' => false,
+          'hrid' => 'ho00000000011'
         }
       ]
+    end
+    let(:instance_view_response) do
+      { 'instances' => [{ 'instanceId' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+                          'instance' => { 'id' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+                                          '_version' => 7,
+                                          'hrid' => 'a1994253',
+                                          'source' => 'MARC',
+                                          'title' => "... Old Possum's book of practical cats." },
+                          'holdingsRecords' => holdings_array }],
+        'totalRecords' => 2,
+        'resultInfo' => { 'totalRecords' => 1 } }
     end
     let(:search_instance_response) do
       {
@@ -474,21 +504,88 @@ RSpec.describe FolioClient do
           {
             'id' => '5108040a-65bc-40ed-bd50-265958301ce4',
             'title' => 'TOPICS IN CONVEX OPTIMIZATION FOR MACHINE LEARNING',
-            'holdings' => holdings_array
+            'holdings' => [{ hrid: 'ho00000000010' }, { hrid: 'ho00000000011' }]
           }
         ]
       }
     end
+    let(:external_id) { '5108040a-65bc-40ed-bd50-265958301ce4' }
 
     before do
-      stub_request(:get, "#{url}/search/instances?expandAll=true&query=hrid==#{hrid}")
+      stub_request(:get, "#{url}/search/instances?query=hrid==#{hrid}")
         .to_return(status: 200, body: search_instance_response.to_json)
+      stub_request(:get, "#{url}/inventory-view/instances?query=id==#{external_id}")
+        .to_return(status: 200, body: instance_view_response.to_json)
     end
 
     it 'returns the holdings array for the instance' do
       result = client.fetch_holdings(hrid: hrid)
       expect(result).to eq(holdings_array)
       expect(result.length).to eq(2)
+    end
+  end
+
+  describe '.update_holdings' do
+    let(:holdings_id) { '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e' }
+    let(:holdings_record) do
+      {
+        'id' => holdings_id,
+        'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
+        'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+        'discoverySuppress' => false,
+        'hrid' => 'ho00000000010'
+      }
+    end
+
+    before do
+      allow(described_class.instance).to receive(:update_holdings)
+    end
+
+    it 'invokes instance#update_holdings' do
+      client.update_holdings(holdings_id: holdings_id, holdings_record: holdings_record)
+      expect(client.instance).to have_received(:update_holdings)
+        .with(holdings_id: holdings_id, holdings_record: holdings_record)
+    end
+  end
+
+  describe '#update_holdings' do
+    let(:holdings_id) { '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e' }
+    let(:holdings_record) do
+      {
+        'id' => holdings_id,
+        'instanceId' => '5108040a-65bc-40ed-bd50-265958301ce4',
+        'permanentLocationId' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+        'discoverySuppress' => false,
+        'hrid' => 'ho00000000010'
+      }
+    end
+    let(:inventory) { instance_double(described_class::Inventory) }
+    let(:path) { '/inventory/holdings/7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e' }
+
+    before do
+      allow(described_class::Inventory).to receive(:new).and_return(inventory)
+      allow(inventory).to receive(:update_holdings)
+      stub_request(:put, "#{url}/#{path}")
+        .with(
+          body: nil,
+          headers: {
+            'Accept' => 'application/json, text/plain',
+            'Content-Type' => 'text/plain',
+            'Some-Bogus-Headers' => 'here',
+            'X-Okapi-Token' => 'a_folio_access_token'
+          }
+        )
+        .to_return(status: 204, body: nil, headers: {})
+    end
+
+    it 'invokes Inventory#update_holdings' do
+      client.update_holdings(holdings_id: holdings_id, holdings_record: holdings_record)
+      expect(inventory).to have_received(:update_holdings)
+    end
+
+    it 'returns success' do
+      result = client.update_holdings(holdings_id: holdings_id, holdings_record: holdings_record)
+      expect(result).to be_nil
     end
   end
 
