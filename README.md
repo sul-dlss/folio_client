@@ -200,17 +200,51 @@ client.fetch_holdings(hrid: 'in00000000067')
 
 # Update a holdings record for an instance HRID
 holdings_record = 
-      { 'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e',
-        '_version' => 1,
-        'sourceId' => 'f32d531e-df79-46b3-8932-cdd35f7a2264',
-        'hrid' => 'ah1994253_1',
-        'holdingsTypeId' => '5684e4a3-9279-4463-b6ee-20ae21bbec07',
-        'instanceId' => '54ec1f1a-d039-5a39-95f2-71df00061664',
-        'permanentLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
-        'effectiveLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
-        'discoverySuppress' => false }
+  { 'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e',
+    '_version' => 1,
+    'sourceId' => 'f32d531e-df79-46b3-8932-cdd35f7a2264',
+    'hrid' => 'ah1994253_1',
+    'holdingsTypeId' => '5684e4a3-9279-4463-b6ee-20ae21bbec07',
+    'instanceId' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+    'permanentLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+    'effectiveLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+    'discoverySuppress' => false }
 client.update_holdings(holdings_id: '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e', holdings_record:)
+
+#Create a holdings record
+holdings_record =
+  { "instance_id" => "f1b301ce-f5d2-53b5-85eb-e4452bb5a591",
+    "permanent_location_id" => '1b14e21c-8d47-45c7-bc49-456a0086422b',
+    "source_id" => "f32d531e-df79-46b3-8932-cdd35f7a2264",
+    "holdings_type_id" => "996f93e2-5b5e-4cf2-9168-33ced1f95eed",
+    "discovery_suppress" => false }
+client.create_holdings(holdings_record:)
+=> {
+    "id" => "c65bb9dc-ebca-41fc-9c50-0d39085c1987",
+    "_version" => 1,
+    "sourceId" => "f32d531e-df79-46b3-8932-cdd35f7a2264",
+    "hrid" => "ho00000927052",
+    "holdingsTypeId" => "996f93e2-5b5e-4cf2-9168-33ced1f95eed",
+    "formerIds" => [],
+    "instanceId" => "54ec1f1a-d039-5a39-95f2-71df00061664",
+    "permanentLocationId" => "1b14e21c-8d47-45c7-bc49-456a0086422b",
+    "effectiveLocationId" => "1b14e21c-8d47-45c7-bc49-456a0086422b",
+    "electronicAccess" => [],
+    "administrativeNotes" => [],
+    "notes" => [],
+    "holdingsStatements" => [],
+    "holdingsStatementsForIndexes" => [],
+    "holdingsStatementsForSupplements" => [],
+    "discoverySuppress" => false,
+    "statisticalCodeIds" => [],
+    "metadata" =>
+    {"createdDate" => "2026-03-12T18:58:03.576+00:00",
+    "createdByUserId" => "709fdac6-d3f3-5784-8839-fe36ad6ed0b3",
+    "updatedDate" => "2026-03-12T18:58:03.576+00:00",
+    "updatedByUserId" => "709fdac6-d3f3-5784-8839-fe36ad6ed0b3"}
+    }
 ```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

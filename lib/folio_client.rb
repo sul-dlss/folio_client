@@ -78,7 +78,7 @@ class FolioClient
       self
     end
 
-    delegate :config, :connection, :cookie_jar, :data_import, :default_timeout,
+    delegate :config, :connection, :cookie_jar, :create_holdings, :data_import, :default_timeout,
              :edit_marc_json, :fetch_external_id, :fetch_holdings, :fetch_hrid,
              :fetch_instance_info, :fetch_location, :fetch_marc_hash, :fetch_marc_xml,
              :force_token_refresh!, :get, :has_instance_status?,
@@ -211,6 +211,13 @@ class FolioClient
     Inventory
       .new
       .update_holdings(...)
+  end
+
+  # @see Inventory#create_holdings
+  def create_holdings(...)
+    Inventory
+      .new
+      .create_holdings(...)
   end
 
   # @see SourceStorage#fetch_marc_hash
