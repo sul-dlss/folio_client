@@ -84,25 +84,19 @@ class FolioClient
     end
 
     # Put an updated holdings record
+    # @see https://s3.amazonaws.com/foliodocs/api/mod-inventory/p/inventory.html#inventory_holdings__holdingsid__put
     # @param holdings_id [String] UUID of the holdings record to update
     # @param holdings_record [Hash] holdings record
-    # @return [Hash, nil] response body parsed as JSON, or nil if the response body is blank
     # @raise [ResourceNotFound] if holdings record with the given UUID is not found
-    # @raise [BadRequestError] if the API returns a 400 Bad Request response, which may occur if the update includes invalid fields or values
+    # @raise [BadRequestError] may occur if the update includes invalid fields or values
     # @raise [UnexpectedResponse] if the API returns some other error response
     def update_holdings(holdings_id:, holdings_record:)
-      response = client.put("/inventory/holdings/#{holdings_id}", holdings_record, return_status: true)
+      response = client.put("/inventory/holdings/#{holdings_id}", holdings_record) { true }
 
       raise ResourceNotFound, "Holdings record with ID #{holdings_id} not found" if response.status == 404
-      raise BadRequestError if response.status == 400
+      raise BadRequestError, "Bad request for holdings record #{holdings_id}: #{JSON.parse(response.body)}" if response.status == 400
 
       UnexpectedResponse.call(response) unless response.success?
-
-      # Successful update
-      return nil if response.status == 204
-
-      # Some other success response, which is unexpected but we want to return the message body if present
-      JSON.parse(response.body)
     end
 
     private

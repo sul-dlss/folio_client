@@ -131,9 +131,9 @@ class FolioClient
   # If the body is JSON, it will be automatically serialized
   # @param path [String] the path to the Folio API request
   # @param body [Object] body to put to the API as JSON
-  # @return [Hash, Faraday::Response, nil] the response body parsed as JSON, or nil if the response body is blank
+  # @return [Hash, Faraday::Response, nil] if a block is provided, the response object; otherwise parsed response body or nil
   # rubocop:disable Metrics/MethodLength
-  def put(path, body = nil, content_type: 'application/json', return_status: false)
+  def put(path, body = nil, content_type: 'application/json')
     req_body = content_type == 'application/json' ? body&.to_json : body
     response = with_token_refresh_when_unauthorized do
       req_headers = {
@@ -143,7 +143,7 @@ class FolioClient
       connection.put(path, req_body, req_headers)
     end
 
-    return response if return_status
+    return response if block_given?
 
     UnexpectedResponse.call(response) unless response.success?
 

@@ -541,13 +541,14 @@ RSpec.describe FolioClient::Inventory do
       before do
         stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
           .with(body: updated_record.to_json)
-          .to_return(status: 400, body: 'unable to update Holdings -- malformed JSON')
+          .to_return(status: 400, body: 'unable to update Holdings -- malformed JSON'.to_json)
       end
 
       it 'raises UnexpectedResponse' do
         expect do
           inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
         end.to raise_error(FolioClient::BadRequestError)
+           .with_message(/Bad request for holdings record #{holdings_id}: unable to update Holdings -- malformed JSON/)
       end
     end
 
@@ -563,19 +564,6 @@ RSpec.describe FolioClient::Inventory do
           inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
         end.to raise_error(FolioClient::ResourceNotFound,
                            /Holdings record with ID #{holdings_id} not found/)
-      end
-    end
-
-    context 'when a message body is returned' do
-      before do
-        stub_request(:put, "#{url}/inventory/holdings/#{holdings_id}")
-          .with(body: updated_record.to_json)
-          .to_return(status: 200, body: { 'message' => 'Some other success message' }.to_json)
-      end
-
-      it 'returns the message' do
-        result = inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
-        expect(result).to eq({ 'message' => 'Some other success message' })
       end
     end
   end
