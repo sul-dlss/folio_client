@@ -98,6 +98,10 @@ class FolioClient
     def check_not_found(result, index, max_checks)
       return unless result.failure? && result.failure == :not_found && index > max_checks
 
+      # NOTE: The client typically delegates raising exceptions (based on HTTP
+      #       responses) to the UnexpectedResponse class, but the interaction in
+      #       JobStatus is more complex due to waits/loops, so we allow this
+      #       class to do some of its own exception handling.
       raise ResourceNotFound,
             "Job #{job_execution_id} not found after #{index} retries. The data import job may still have completed."
     end

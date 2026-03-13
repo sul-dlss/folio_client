@@ -4,16 +4,18 @@ class FolioClient
   # Handles unexpected responses when communicating with Folio
   class UnexpectedResponse
     # @param [Faraday::Response] response
-    # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Metrics/AbcSize
-    def self.call(response)
+    def self.call(response, **kwargs) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+      subject = kwargs.fetch(:exception_subject, 'resource')
+
       case response.status
+      when 400
+        raise BadRequestError, "Bad request for #{subject}: #{response.body}"
       when 401
         raise UnauthorizedError, "There was a problem with the access token: #{response.body}"
       when 403
         raise ForbiddenError, "The operation requires privileges which the client does not have: #{response.body}"
       when 404
-        raise ResourceNotFound, "Endpoint not found or resource does not exist: #{response.body}"
+        raise ResourceNotFound, "Endpoint not found or #{subject} does not exist: #{response.body}"
       when 409
         raise ConflictError, "Resource cannot be updated: #{response.body}"
       when 422
@@ -21,10 +23,8 @@ class FolioClient
       when 500
         raise ServiceUnavailable, "The remote server returned an internal server error: #{response.body}"
       else
-        raise StandardError, "Unexpected response: #{response.status} #{response.body}"
+        raise Error, "Unexpected response: #{response.status} #{response.body}"
       end
     end
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 end
