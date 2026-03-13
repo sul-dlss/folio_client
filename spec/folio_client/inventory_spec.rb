@@ -567,4 +567,79 @@ RSpec.describe FolioClient::Inventory do
       end
     end
   end
+
+  describe '#create_holdings' do
+    let(:record) do
+      { 'instance_id' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+        'permanent_location_id' => '4573e824-9273-4f13-972f-cff7bf504217',
+        'source_id' => 'f32d531e-df79-46b3-8932-cdd35f7a2264',
+        'holdings_type_id' => '5684e4a3-9279-4463-b6ee-20ae21bbec07' }
+    end
+    let(:created_record_response) do
+      { 'id' => '7f89e96c-478c-4ca2-bb85-0a1c5b0c6f3e',
+        '_version' => 1,
+        'sourceId' => 'f32d531e-df79-46b3-8932-cdd35f7a2264',
+        'hrid' => 'ah1994253_1',
+        'holdingsTypeId' => '5684e4a3-9279-4463-b6ee-20ae21bbec07',
+        'instanceId' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+        'permanentLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+        'effectiveLocationId' => '4573e824-9273-4f13-972f-cff7bf504217',
+        'discoverySuppress' => false }
+    end
+
+    context 'when the holdings record is successfully created' do
+      before do
+        stub_request(:post, "#{url}/holdings-storage/holdings")
+          .with(body: {
+            instanceId: record['instance_id'],
+            permanentLocationId: record['permanent_location_id'],
+            sourceId: record['source_id'],
+            holdingsTypeId: record['holdings_type_id'],
+            discoverySuppress: false
+          }.to_json)
+          .to_return(status: 201, body: created_record_response.to_json)
+      end
+
+      it 'sends a POST request to create the holdings record and returns the response' do
+        result = inventory.create_holdings(holdings_record: record)
+        expect(result).to eq(created_record_response)
+      end
+    end
+
+    context 'when a bad holdings record is sent' do
+      before do
+        stub_request(:post, "#{url}/holdings-storage/holdings")
+          .with(body: {
+            instanceId: record['instance_id'],
+            permanentLocationId: record['permanent_location_id'],
+            sourceId: record['source_id'],
+            holdingsTypeId: record['holdings_type_id'],
+            discoverySuppress: false
+          }.to_json)
+          .to_return(status: 400, body: 'unable to create Holdings -- malformed JSON'.to_json)
+      end
+
+      it 'raises UnexpectedResponse' do
+        expect do
+          inventory.create_holdings(holdings_record: record)
+        end.to raise_error(StandardError)
+           .with_message(/unable to create Holdings -- malformed JSON/)
+      end
+    end
+
+    context 'when the holdings record lacks fields' do
+      let(:record) do
+        { 'instance_id' => '54ec1f1a-d039-5a39-95f2-71df00061664',
+          'permanent_location_id' => nil,
+          'source_id' => '' }
+      end
+
+      it 'raises ArgumentError' do
+        expect do
+          inventory.create_holdings(holdings_record: record)
+        end.to raise_error(ArgumentError)
+           .with_message(/Missing required fields: permanent_location_id, source_id, holdings_type_id/)
+      end
+    end
+  end
 end

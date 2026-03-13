@@ -99,6 +99,24 @@ class FolioClient
       UnexpectedResponse.call(response) unless response.success?
     end
 
+    # Post a new holdings record
+    # @param holdings_record [Hash] holdings record
+    # @return [Hash] the created holdings record, including its id and other fields
+    # @see https://s3.amazonaws.com/foliodocs/api/mod-inventory-storage/p/holdings-storage.html#holdings_storage_holdings_post
+    def create_holdings(holdings_record:)
+      required = %w[instance_id permanent_location_id source_id holdings_type_id]
+      missing = required.select { |field| !holdings_record.key?(field) || holdings_record[field].blank? }
+      raise ArgumentError, "Missing required fields: #{missing.join(', ')}" if missing.any?
+
+      client.post('/holdings-storage/holdings', {
+                    instanceId: holdings_record['instance_id'],
+                    permanentLocationId: holdings_record['permanent_location_id'],
+                    sourceId: holdings_record['source_id'],
+                    holdingsTypeId: holdings_record['holdings_type_id'],
+                    discoverySuppress: false
+                  })
+    end
+
     private
 
     def client

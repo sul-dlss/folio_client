@@ -589,6 +589,51 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe '.create_holdings' do
+    let(:instance_id) { '5108040a-65bc-40ed-bd50-265958301ce4' }
+    let(:holdings_record) do
+      {
+        'instance_id' => instance_id,
+        'permanent_location_id' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+        'discovery_suppress' => false,
+        'source_id' => '12345678'
+      }
+    end
+
+    before do
+      allow(described_class.instance).to receive(:create_holdings)
+    end
+
+    it 'invokes instance#create_holdings' do
+      client.create_holdings(instance_id: instance_id, holdings_record: holdings_record)
+      expect(client.instance).to have_received(:create_holdings)
+        .with(instance_id: instance_id, holdings_record: holdings_record)
+    end
+  end
+
+  describe '#create_holdings' do
+    let(:instance_id) { '5108040a-65bc-40ed-bd50-265958301ce4' }
+    let(:holdings_record) do
+      {
+        'instance_id' => instance_id,
+        'permanent_location_id' => 'd9cd0bed-1b49-4b5e-a7bd-064b8d177231',
+        'discovery_suppress' => false,
+        'source_id' => '12345678'
+      }
+    end
+    let(:inventory) { instance_double(described_class::Inventory) }
+
+    before do
+      allow(described_class::Inventory).to receive(:new).and_return(inventory)
+      allow(inventory).to receive(:create_holdings)
+    end
+
+    it 'invokes Inventory#create_holdings' do
+      client.create_holdings(holdings_record: holdings_record)
+      expect(inventory).to have_received(:create_holdings).once
+    end
+  end
+
   describe '.data_import' do
     let(:job_profile_id) { '4ba4f4ab' }
     let(:job_profile_name) { 'ETDs' }
