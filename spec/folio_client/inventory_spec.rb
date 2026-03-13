@@ -548,7 +548,7 @@ RSpec.describe FolioClient::Inventory do
         expect do
           inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
         end.to raise_error(FolioClient::BadRequestError)
-           .with_message(/Bad request for holdings record #{holdings_id}: unable to update Holdings -- malformed JSON/)
+           .with_message(/Bad request for holdings record with ID #{holdings_id}:.+unable to update Holdings -- malformed JSON/)
       end
     end
 
@@ -563,7 +563,7 @@ RSpec.describe FolioClient::Inventory do
         expect do
           inventory.update_holdings(holdings_id: holdings_id, holdings_record: updated_record)
         end.to raise_error(FolioClient::ResourceNotFound,
-                           /Holdings record with ID #{holdings_id} not found/)
+                           /holdings record with ID #{holdings_id} does not exist: Holdings record not found/)
       end
     end
   end

@@ -15,7 +15,11 @@ class FolioClient
 
       access_cookie = FolioClient.cookie_jar.cookies.find { |cookie| cookie.name == 'folioAccessToken' }
 
-      raise StandardError, "Problem with folioAccessToken cookie: #{response.headers}, #{response.body}" unless access_cookie
+      # NOTE: The client typically delegates raising exceptions (based on HTTP
+      #       responses) to the UnexpectedResponse class, but this call in
+      #       Authenticator is a one-off, unlike any other in the app, so we
+      #       allow it to customize its exception handling.
+      raise UnauthorizedError, "Problem with folioAccessToken cookie: #{response.headers}, #{response.body}" unless access_cookie
 
       access_cookie.value
     end

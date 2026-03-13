@@ -21,7 +21,7 @@ class FolioClient
               "Expected 1 record for #{instance_hrid}, but found #{record_count}"
       end
 
-      response_hash['sourceRecords'].first['parsedRecord']['content']
+      response_hash.dig('sourceRecords', 0, 'parsedRecord', 'content')
     end
 
     # get marc bib data as MARCXML from folio given an instance HRID
@@ -30,9 +30,7 @@ class FolioClient
     # @return [String] MARCXML string
     # @raise [ResourceNotFound]
     # @raise [MultipleResourcesFound]
-    # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Metrics/AbcSize
-    def fetch_marc_xml(instance_hrid: nil, barcode: nil)
+    def fetch_marc_xml(instance_hrid: nil, barcode: nil) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       if barcode.nil? && instance_hrid.nil?
         raise ArgumentError,
               'Either a barcode or a Folio instance HRID must be provided'
@@ -62,8 +60,6 @@ class FolioClient
       updated_marc.fields << MARC::ControlField.new('003', 'FOLIO')
       updated_marc.to_xml.to_s
     end
-    # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Metrics/AbcSize
 
     private
 

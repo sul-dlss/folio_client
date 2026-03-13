@@ -223,29 +223,6 @@ RSpec.describe FolioClient do
         expect(client.put(path, 'foobar', content_type: 'text/plain')).to eq(response)
       end
     end
-
-    context 'when called with a block' do
-      before do
-        stub_request(:put, "#{url}/#{path}")
-          .with(
-            body: '{"id":5}',
-            headers: {
-              'Accept' => 'application/json, text/plain',
-              'Content-Type' => 'application/json',
-              'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_folio_access_token'
-            }
-          )
-          .to_return(status: 204, body: response.to_json, headers: {})
-      end
-
-      it 'returns the response object' do
-        put_response = client.put(path, { id: 5 }) { true }
-
-        expect(put_response).to be_a(Faraday::Response)
-        expect(put_response.status).to eq(204)
-      end
-    end
   end
 
   describe '.fetch_hrid' do

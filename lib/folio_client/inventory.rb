@@ -91,12 +91,7 @@ class FolioClient
     # @raise [BadRequestError] may occur if the update includes invalid fields or values
     # @raise [UnexpectedResponse] if the API returns some other error response
     def update_holdings(holdings_id:, holdings_record:)
-      response = client.put("/inventory/holdings/#{holdings_id}", holdings_record) { true }
-
-      raise ResourceNotFound, "Holdings record with ID #{holdings_id} not found" if response.status == 404
-      raise BadRequestError, "Bad request for holdings record #{holdings_id}: #{JSON.parse(response.body)}" if response.status == 400
-
-      UnexpectedResponse.call(response) unless response.success?
+      client.put("/inventory/holdings/#{holdings_id}", holdings_record, exception_subject: "holdings record with ID #{holdings_id}")
     end
 
     # Post a new holdings record
