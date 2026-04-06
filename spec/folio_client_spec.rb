@@ -7,10 +7,9 @@ RSpec.describe FolioClient do
     described_class.configure(**args)
   end
 
-  let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
+  let(:args) { { url: url, login_params: login_params, tenant_id: 'foobar' } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
-  let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:cookie_headers) do
     { 'Set-Cookie': "folioAccessToken=#{token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
   end
@@ -48,15 +47,11 @@ RSpec.describe FolioClient do
     it 'stores passed in values in the config' do
       expect(client.config.login_params).to eq(login_params)
       expect(client.config.url).to eq(url)
-      expect(client.config.okapi_headers).to eq(okapi_headers)
+      expect(client.config.tenant_id).to eq('foobar')
     end
 
     it 'gets the default timeout value' do
-      expect(client.config.timeout).to eq(120)
-    end
-
-    it 'stores the fetched token in the config' do
-      expect(client.config.token).to eq(token)
+      expect(client.config.timeout).to eq(180)
     end
 
     it 'returns the singleton class' do
@@ -65,21 +60,13 @@ RSpec.describe FolioClient do
   end
 
   describe '#force_token_refresh!' do
-    let(:refreshed_token) { 'another dummy token value' }
-    let(:refreshed_cookie_headers) do
-      { 'Set-Cookie': "folioAccessToken=#{refreshed_token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
-    end
-
     before do
-      stub_request(:post, "#{url}/authn/login-with-expiry")
-        .to_return(status: 200, headers: refreshed_cookie_headers)
+      allow(described_class::Authenticator).to receive(:refresh_token!)
     end
 
     it 'forces a token refresh' do
-      expect { client.force_token_refresh! }
-        .to change(client.config, :token)
-        .from(token)
-        .to(refreshed_token)
+      client.force_token_refresh!
+      expect(described_class::Authenticator).to have_received(:refresh_token!).once
     end
   end
 
@@ -108,9 +95,7 @@ RSpec.describe FolioClient do
             body: '{"id":5}',
             headers: {
               'Accept' => 'application/json, text/plain',
-              'Content-Type' => 'application/json',
-              'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_folio_access_token'
+              'Content-Type' => 'application/json'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -127,9 +112,7 @@ RSpec.describe FolioClient do
           .with(
             body: '',
             headers: {
-              'Accept' => 'application/json, text/plain',
-              'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_folio_access_token'
+              'Accept' => 'application/json, text/plain'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -147,9 +130,7 @@ RSpec.describe FolioClient do
             body: 'foobar',
             headers: {
               'Accept' => 'application/json, text/plain',
-              'Content-Type' => 'text/plain',
-              'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_folio_access_token'
+              'Content-Type' => 'text/plain'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -172,9 +153,7 @@ RSpec.describe FolioClient do
             body: '{"id":5}',
             headers: {
               'Accept' => 'application/json, text/plain',
-              'Content-Type' => 'application/json',
-              'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_folio_access_token'
+              'Content-Type' => 'application/json'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -191,9 +170,7 @@ RSpec.describe FolioClient do
           .with(
             body: '',
             headers: {
-              'Accept' => 'application/json, text/plain',
-              'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_folio_access_token'
+              'Accept' => 'application/json, text/plain'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -211,9 +188,7 @@ RSpec.describe FolioClient do
             body: 'foobar',
             headers: {
               'Accept' => 'application/json, text/plain',
-              'Content-Type' => 'text/plain',
-              'Some-Bogus-Headers' => 'here',
-              'X-Okapi-Token' => 'a_folio_access_token'
+              'Content-Type' => 'text/plain'
             }
           )
           .to_return(status: 200, body: response.to_json, headers: {})
@@ -547,9 +522,7 @@ RSpec.describe FolioClient do
           body: nil,
           headers: {
             'Accept' => 'application/json, text/plain',
-            'Content-Type' => 'text/plain',
-            'Some-Bogus-Headers' => 'here',
-            'X-Okapi-Token' => 'a_folio_access_token'
+            'Content-Type' => 'text/plain'
           }
         )
         .to_return(status: 204, body: nil, headers: {})
@@ -870,25 +843,18 @@ RSpec.describe FolioClient do
           { status: 200, headers: refreshed_cookie_headers }
         )
       stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
-        .with(headers: { 'x-okapi-token': expired_token })
         .to_return(
-          { status: 401, body: 'invalid authN token' }
-        )
-      stub_request(:get, "#{url}/search/instances?query=items.barcode==#{barcode}")
-        .with(headers: { 'x-okapi-token': new_token })
-        .to_return(
+          { status: 401, body: 'invalid authN token' },
           { status: 200, body: search_instance_response.to_json }
         )
       stub_request(:get, "#{url}/inventory/instances/#{instance_uuid}")
-        .with(headers: { 'x-okapi-token': new_token })
         .to_return(status: 200, body: inventory_instance_response.to_json)
+      allow(described_class::Authenticator).to receive(:refresh_token!).and_call_original
     end
 
     it 'fetches new token and retries' do
-      expect { client.fetch_hrid(barcode: barcode) }
-        .to change(client.config, :token)
-        .from(expired_token)
-        .to(new_token)
+      client.fetch_hrid(barcode: barcode)
+      expect(described_class::Authenticator).to have_received(:refresh_token!).once
     end
   end
 

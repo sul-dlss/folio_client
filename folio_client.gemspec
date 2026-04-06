@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'activesupport', '>= 4.2'
+  spec.add_dependency 'deprecation', '>= 0'
   spec.add_dependency 'dry-monads'
   spec.add_dependency 'faraday'
   spec.add_dependency 'faraday-cookie_jar'

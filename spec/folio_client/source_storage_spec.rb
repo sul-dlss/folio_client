@@ -3,10 +3,9 @@
 RSpec.describe FolioClient::SourceStorage do
   subject(:source_storage) { described_class.new }
 
-  let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
+  let(:args) { { url: url, login_params: login_params, tenant_id: 'foobar' } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
-  let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'aLongSTring.eNCodinga.JwTeeeee' }
   let(:cookie_headers) do
     { 'Set-Cookie': "folioAccessToken=#{token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
@@ -26,9 +25,7 @@ RSpec.describe FolioClient::SourceStorage do
   let(:post_authn_request_headers) do
     {
       'Accept' => 'application/json, text/plain',
-      'Content-Type' => 'application/json',
-      'Some-Bogus-Headers' => 'here',
-      'X-Okapi-Token' => token
+      'Content-Type' => 'application/json'
     }
   end
   let(:source_storage_response) do

@@ -5,10 +5,9 @@ RSpec.describe FolioClient::Users do
     described_class.new
   end
 
-  let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
+  let(:args) { { url: url, login_params: login_params, tenant_id: 'foobar' } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
-  let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'a_long_silly_token' }
   let(:cookie_headers) do
     { 'Set-Cookie': "folioAccessToken=#{token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }

@@ -13,10 +13,8 @@ client =
       username: ENV.fetch('OKAPI_USER', nil),
       password: ENV.fetch('OKAPI_PASSWORD', nil)
     },
-    okapi_headers: {
-      'X-Okapi-Tenant': ENV.fetch('OKAPI_TENANT', nil),
-      'User-Agent': 'folio_client gem (testing)'
-    }
+    tenant_id: ENV.fetch('OKAPI_TENANT', nil),
+    user_agent: 'folio_client gem (testing)'
   )
 
 pp(client.fetch_marc_hash(instance_hrid: 'a666'))

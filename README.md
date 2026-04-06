@@ -25,9 +25,10 @@ require 'folio_client'
 
 # this will configure the client and request an access token
 client = FolioClient.configure(
-           url: 'https://okapi-dev.stanford.edu',
+           url: 'https://folio-dev.stanford.edu',
            login_params: { username: 'xxx', password: 'yyy' },
-           okapi_headers: { 'X-Okapi-Tenant': 'sul', 'User-Agent': 'FolioApiClient' }
+           tenant_id: 'sul',
+           user_agent: 'FolioApiClient'
          )
 
 response = client.get('/organizations/organizations', {query_string_param: 'abcdef'})
@@ -43,7 +44,7 @@ require 'folio_client'
 client = FolioClient.configure(
     url: Settings.okapi.url,
     login_params: Settings.okapi.login_params,
-    okapi_headers: Settings.okapi.headers,
+    ...
 )
 ```
 

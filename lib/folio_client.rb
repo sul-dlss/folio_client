@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+require 'http/cookie' # Workaround for https://github.com/sparklemotion/http-cookie/issues/62
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/object/blank'
+require 'deprecation'
 require 'faraday'
 require 'faraday-cookie_jar'
 require 'marc'
@@ -44,47 +46,53 @@ class FolioClient
   # Error raised when the Folio API returns a 400 Bad Request
   class BadRequestError < Error; end
 
-  DEFAULT_HEADERS = {
-    accept: 'application/json, text/plain',
-    content_type: 'application/json'
-  }.freeze
-
   class << self
+    extend Deprecation
+
+    Config = Struct.new('Config', :url, :login_params, :timeout, :tenant_id, :user_agent) do
+      def headers
+        {
+          accept: 'application/json, text/plain',
+          content_type: 'application/json',
+          user_agent: user_agent,
+          'X-Okapi-Tenant': tenant_id
+        }
+      end
+    end
+
     # @param url [String] the folio API URL
     # @param login_params [Hash] the folio client login params (username:, password:)
-    # @param okapi_headers [Hash] the okapi specific headers to add (X-Okapi-Tenant:, User-Agent:)
+    # @param tenant_id [String] the ID of the Folio tenant
+    # @param user_agent [String] the user agent string to send in API requests
+    # @param timeout [Integer] the timeout in seconds for API requests
+    # @param unsupported_kwargs [Hash] any additional keyword arguments that are not explicitly supported.
+    #   This is to allow for backward compatibility with previous versions of the client that accepted
+    #   additional configuration options, such as `okapi_headers`, without raising an error. The values
+    #   of any recognized keys in this hash will be used to set the corresponding configuration options,
+    #   and a deprecation warning will be issued for any keys present in this hash.
     # @return [FolioClient] the configured Singleton class
-    def configure(url:, login_params:, okapi_headers:, timeout: default_timeout, **)
-      # rubocop:disable Style/OpenStructUse
-      instance.config = OpenStruct.new(
-        # For the initial token, use a dummy value to avoid hitting any APIs
-        # during configuration, allowing `with_token_refresh_when_unauthorized` to handle
-        # auto-magic token refreshing. Why not immediately get a valid token? Our apps
-        # commonly invoke client `.configure` methods in the initializer in all
-        # application environments, even those that are never expected to
-        # connect to production APIs, such as local development machines.
-        #
-        # NOTE: `nil` and blank string cannot be used as dummy values here as
-        # they lead to a malformed request to be sent, which triggers an
-        # exception not rescued by `with_token_refresh_when_unauthorized`
-        token: 'a temporary dummy token to avoid hitting the API before it is needed',
+    def configure(url:, login_params:, tenant_id: nil, user_agent: default_user_agent, # rubocop:disable Metrics/ParameterLists
+                  timeout: default_timeout, **unsupported_kwargs)
+      Deprecation.warn(FolioClient, "Deprecated keywords: #{unsupported_kwargs.keys.sort.join(', ')}") if unsupported_kwargs.any?
+
+      instance.config = Config.new(
         url: url,
         login_params: login_params,
-        okapi_headers: okapi_headers,
-        timeout: timeout
+        timeout: timeout,
+        tenant_id: tenant_id.presence || unsupported_kwargs.dig(:okapi_headers, :'X-Okapi-Tenant'),
+        user_agent: user_agent.presence || unsupported_kwargs.dig(:okapi_headers, :'User-Agent')
       )
-      # rubocop:enable Style/OpenStructUse
 
       self
     end
 
     delegate :config, :connection, :cookie_jar, :create_holdings, :data_import, :default_timeout,
-             :edit_marc_json, :fetch_external_id, :fetch_holdings, :fetch_hrid,
+             :default_user_agent, :edit_marc_json, :fetch_external_id, :fetch_holdings, :fetch_hrid,
              :fetch_instance_info, :fetch_location, :fetch_marc_hash, :fetch_marc_xml,
-             :force_token_refresh!, :get, :has_instance_status?,
-             :http_get_headers, :http_post_and_put_headers, :interface_details,
-             :job_profiles, :organization_interfaces, :organizations, :update_holdings, :users,
-             :user_details, :post, :put, to: :instance
+             :force_token_refresh!, :get, :has_instance_status?, :http_get_headers,
+             :http_post_and_put_headers, :interface_details, :job_profiles,
+             :organization_interfaces, :organizations, :update_holdings, :users, :user_details,
+             :post, :put, to: :instance
   end
 
   attr_accessor :config
@@ -95,7 +103,7 @@ class FolioClient
   # @return [Hash, nil] the parsed response body or nil
   def get(path, params = {})
     response = with_token_refresh_when_unauthorized do
-      connection.get(path, params, { 'x-okapi-token': config.token })
+      connection.get(path, params)
     end
 
     UnexpectedResponse.call(response) unless response.success?
@@ -111,11 +119,7 @@ class FolioClient
   def post(path, body = nil, content_type: 'application/json')
     req_body = content_type == 'application/json' ? body&.to_json : body
     response = with_token_refresh_when_unauthorized do
-      req_headers = {
-        'x-okapi-token': config.token,
-        'content-type': content_type
-      }
-      connection.post(path, req_body, req_headers)
+      connection.post(path, req_body, { content_type: content_type })
     end
 
     UnexpectedResponse.call(response) unless response.success?
@@ -131,11 +135,7 @@ class FolioClient
   def put(path, body = nil, content_type: 'application/json', **exception_args)
     req_body = content_type == 'application/json' ? body&.to_json : body
     response = with_token_refresh_when_unauthorized do
-      req_headers = {
-        'x-okapi-token': config.token,
-        'content-type': content_type
-      }
-      connection.put(path, req_body, req_headers)
+      connection.put(path, req_body, { content_type: content_type })
     end
 
     UnexpectedResponse.call(response, **exception_args) unless response.success?
@@ -147,7 +147,7 @@ class FolioClient
   def connection
     @connection ||= Faraday.new(
       url: config.url,
-      headers: DEFAULT_HEADERS.merge(config.okapi_headers || {}),
+      headers: config.headers,
       request: { timeout: config.timeout }
     ) do |faraday|
       faraday.use :cookie_jar, jar: cookie_jar
@@ -288,11 +288,15 @@ class FolioClient
   end
 
   def default_timeout
-    120
+    180
+  end
+
+  def default_user_agent
+    "folio_client #{FolioClient::VERSION}"
   end
 
   def force_token_refresh!
-    config.token = Authenticator.token
+    Authenticator.refresh_token!
   end
 
   private
