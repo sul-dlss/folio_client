@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 RSpec.describe FolioClient::Authenticator do
-  let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
+  let(:args) { { url: url, login_params: login_params, tenant_id: 'foobar' } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
-  let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:connection) { FolioClient.connection }
   let(:http_body) { "{\"okapiToken\" : \"#{token}\"}" }
   let(:cookie_jar) { FolioClient.cookie_jar }
@@ -22,26 +21,10 @@ RSpec.describe FolioClient::Authenticator do
     stub_request(:post, "#{url}/authn/login-with-expiry").to_return(status: http_status, headers: headers)
   end
 
-  describe '.token' do
-    let(:instance) { described_class.new }
-
-    before do
-      allow(described_class).to receive(:new).and_return(instance)
-      allow(instance).to receive(:token)
-    end
-
-    it 'invokes #token on a new instance' do
-      described_class.token
-      expect(instance).to have_received(:token).once
-    end
-  end
-
-  describe '#token' do
-    subject(:authenticator) { described_class.new }
-
+  describe '.refresh_token!' do
     context 'when correct credentials' do
       it 'parses the token from the response' do
-        expect(authenticator.token).to eq(token)
+        expect(described_class.refresh_token!).to eq(token)
       end
     end
 
@@ -50,7 +33,7 @@ RSpec.describe FolioClient::Authenticator do
       let(:http_body) { '{"error" : "get bent"}' }
 
       it 'raises an unauthorized error' do
-        expect { authenticator.token }.to raise_error(FolioClient::UnauthorizedError)
+        expect { described_class.refresh_token! }.to raise_error(FolioClient::UnauthorizedError)
       end
     end
 
@@ -59,7 +42,7 @@ RSpec.describe FolioClient::Authenticator do
       let(:http_body) { '{"error" : "get bent"}' }
 
       it 'raises a forbidden error' do
-        expect { authenticator.token }.to raise_error(FolioClient::ForbiddenError)
+        expect { described_class.refresh_token! }.to raise_error(FolioClient::ForbiddenError)
       end
     end
 
@@ -68,7 +51,7 @@ RSpec.describe FolioClient::Authenticator do
       let(:http_body) { '{"error" : "get bent"}' }
 
       it 'raises a validation error' do
-        expect { authenticator.token }.to raise_error(FolioClient::ValidationError)
+        expect { described_class.refresh_token! }.to raise_error(FolioClient::ValidationError)
       end
     end
 
@@ -77,7 +60,7 @@ RSpec.describe FolioClient::Authenticator do
       let(:http_body) { '{"error" : "get bent"}' }
 
       it 'raises a service unavailable exception' do
-        expect { authenticator.token }.to raise_error(FolioClient::ServiceUnavailable)
+        expect { described_class.refresh_token! }.to raise_error(FolioClient::ServiceUnavailable)
       end
     end
 
@@ -86,7 +69,7 @@ RSpec.describe FolioClient::Authenticator do
       let(:http_body) { '{"error" : "get bent"}' }
 
       it 'raises a conflict error exception' do
-        expect { authenticator.token }.to raise_error(FolioClient::ConflictError)
+        expect { described_class.refresh_token! }.to raise_error(FolioClient::ConflictError)
       end
     end
 
@@ -95,7 +78,7 @@ RSpec.describe FolioClient::Authenticator do
       let(:http_body) { '{"error" : "huh?"}' }
 
       it 'raises a standard error' do
-        expect { authenticator.token }.to raise_error(StandardError, /Unexpected response/)
+        expect { described_class.refresh_token! }.to raise_error(StandardError, /Unexpected response/)
       end
     end
 
@@ -112,7 +95,7 @@ RSpec.describe FolioClient::Authenticator do
 
       it 'raises an error' do
         FolioClient.cookie_jar.clear
-        expect { authenticator.token }.to raise_error(StandardError)
+        expect { described_class.refresh_token! }.to raise_error(StandardError)
       end
     end
   end

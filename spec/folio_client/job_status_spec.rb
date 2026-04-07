@@ -8,7 +8,7 @@ RSpec.describe FolioClient::JobStatus do
     FolioClient.configure(
       url: url,
       login_params: { username: 'username', password: 'password' },
-      okapi_headers: { some_bogus_headers: 'here' }
+      tenant_id: 'foobar'
     )
   end
   let(:job_execution_id) { '4ba4f4ab' }
@@ -50,11 +50,6 @@ RSpec.describe FolioClient::JobStatus do
   describe '#status' do
     before do
       stub_request(:get, "#{url}/change-manager/jobExecutions/#{job_execution_id}")
-        .with(
-          headers: {
-            'X-Okapi-Token' => token
-          }
-        )
         .to_return(status: status, body: status_response_body.to_json, headers: {})
     end
 
@@ -160,11 +155,6 @@ RSpec.describe FolioClient::JobStatus do
     before do
       allow(job_status).to receive_messages(status: current_status, default_timeout_secs: 1)
       stub_request(:get, "#{url}/metadata-provider/journalRecords/#{job_execution_id}")
-        .with(
-          headers: {
-            'X-Okapi-Token' => token
-          }
-        )
         .to_return(status: status, body: journal_records_response.to_json, headers: {})
     end
 

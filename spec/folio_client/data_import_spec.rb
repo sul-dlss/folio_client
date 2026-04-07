@@ -3,10 +3,9 @@
 RSpec.describe FolioClient::DataImport do
   let(:client) { FolioClient.instance }
   let(:data_import) { described_class.new }
-  let(:args) { { url: url, login_params: login_params, okapi_headers: okapi_headers } }
+  let(:args) { { url: url, login_params: login_params, tenant_id: 'foobar' } }
   let(:url) { 'https://folio.example.org' }
   let(:login_params) { { username: 'username', password: 'password' } }
-  let(:okapi_headers) { { some_bogus_headers: 'here' } }
   let(:token) { 'a_long_silly_token' }
   let(:cookie_headers) do
     { 'Set-Cookie': "folioAccessToken=#{token}; Expires=Fri, 22 Sep 2050 14:30:10 GMT; Path=/; Secure; HTTPOnly; SameSite=None" }
@@ -123,8 +122,7 @@ RSpec.describe FolioClient::DataImport do
         .with(
           body: upload_definition_request_body.to_json,
           headers: {
-            'Content-Type' => 'application/json',
-            'X-Okapi-Token' => 'a_long_silly_token'
+            'Content-Type' => 'application/json'
           }
         ).to_return(status: 200,
                     body: upload_definition_response_body.to_json,
@@ -134,8 +132,7 @@ RSpec.describe FolioClient::DataImport do
         .with(
           body: "00098     2200037   4500245006000000\u001E0 \u001FaFolio 21: a bibliography of the Folio Society 1947-1967\u001E\u001D",
           headers: {
-            'Content-Type' => 'application/octet-stream',
-            'X-Okapi-Token' => 'a_long_silly_token'
+            'Content-Type' => 'application/octet-stream'
           }
         )
         .to_return(status: 200, body: upload_file_response_body.to_json, headers: {})
@@ -144,8 +141,7 @@ RSpec.describe FolioClient::DataImport do
         .with(
           body: process_request_body.to_json,
           headers: {
-            'Content-Type' => 'application/json',
-            'X-Okapi-Token' => 'a_long_silly_token'
+            'Content-Type' => 'application/json'
           }
         )
         .to_return(status: 204, body: '', headers: {})
@@ -170,8 +166,7 @@ RSpec.describe FolioClient::DataImport do
       stub_request(:get, "#{url}/data-import-profiles/jobProfiles")
         .with(
           headers: {
-            'Content-Type' => 'application/json',
-            'X-Okapi-Token' => 'a_long_silly_token'
+            'Content-Type' => 'application/json'
           }
         )
         .to_return(status: 200, body: job_profiles_body, headers: {})
