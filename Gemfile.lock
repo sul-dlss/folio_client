@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    folio_client (0.20.0)
+    folio_client (0.21.0)
       activesupport (>= 4.2)
       deprecation
       dry-monads
