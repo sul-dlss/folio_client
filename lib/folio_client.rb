@@ -114,7 +114,13 @@ class FolioClient
   # Send an authenticated post request
   # If the body is JSON, it will be automatically serialized
   # @param path [String] the path to the Folio API request
-  # @param body [Object] body to post to the API as JSON
+  # @param body [Hash, String] if the caller does not override the
+  #   default content type, this method expects the body argument
+  #   to be a hash. Else, the body is posted as is. The assumption
+  #   here is that if the caller passes something else, it will be
+  #   responsible for coercing to JSON itself.
+  # @param content_type [String] the MIME type of the content that
+  #   is being sent (default: application/json)
   # @return [Hash, nil] the parsed response body or nil
   def post(path, body = nil, content_type: 'application/json')
     req_body = content_type == 'application/json' ? body&.to_json : body
@@ -130,7 +136,15 @@ class FolioClient
   # Send an authenticated put request
   # If the body is JSON, it will be automatically serialized
   # @param path [String] the path to the Folio API request
-  # @param body [Object] body to put to the API as JSON
+  # @param body [Hash, String] if the caller does not override the
+  #   default content type, this method expects the body argument
+  #   to be a hash. Else, the body is put as is. The assumption
+  #   here is that if the caller passes something else, it will be
+  #   responsible for coercing to JSON itself.
+  # @param content_type [String] the MIME type of the content that
+  #   is being sent (default: application/json)
+  # @param exception_args [Hash] additional arguments to pass on
+  #   to the `UnexpectedResponse` call
   # @return [Hash, nil] the parsed response body or nil
   def put(path, body = nil, content_type: 'application/json', **exception_args)
     req_body = content_type == 'application/json' ? body&.to_json : body
