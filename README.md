@@ -18,7 +18,7 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-The gem should be configured first, and then you can either call API endpoints directly using GET or POST, or more commonly, use the helper methods provided, as described in the section below.
+The gem should be configured first, and then you can either call API endpoints directly using GET, POST, PUT, and DELETE. It may be more convenient to use the helper methods provided, as described in the section below, if your use case is already covered by what's been implemented already.
 
 ```ruby
 require 'folio_client'
@@ -34,6 +34,12 @@ client = FolioClient.configure(
 response = client.get('/organizations/organizations', {query_string_param: 'abcdef'})
 
 response = client.post('/some/post/endpoint', params_hash.to_json)
+
+# If you want direct access to the response object for your own handling, you can also
+# pass a block to the get, post, put, and delete methods:
+response = client.post('/some/post/endpoint', params_hash.to_json) do |resp|
+  # Do something with resp.status, resp.headers, resp.body, etc.
+end
 ```
 
 Note that the settings will live in the consumer of this gem and would typically be used like this:
