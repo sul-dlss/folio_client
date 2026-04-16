@@ -114,6 +114,22 @@ class FolioClient # rubocop:disable Metrics/ClassLength
     JSON.parse(response.body) if response.body.present?
   end
 
+  # Send an authenticated DELETE request
+  # @note None of the current FolioClient services use this method, but it's provided
+  #   primarily to accommodate work in folio-tasks
+  # @param path [String] API path relative to configured +url+
+  # @return [Hash, Array, nil] parsed JSON body, or +nil+ for empty body
+  # @raise [FolioClient::Error] when Folio responds with an unexpected status
+  def delete(path)
+    response = with_token_refresh_when_unauthorized do
+      connection.delete(path)
+    end
+
+    UnexpectedResponse.call(response) unless response.success?
+
+    JSON.parse(response.body) if response.body.present?
+  end
+
   # Send an authenticated POST request.
   # If +content_type+ is +application/json+, +body+ is serialized with +to_json+.
   # Otherwise +body+ is sent unchanged.

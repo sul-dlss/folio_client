@@ -200,6 +200,20 @@ RSpec.describe FolioClient do
     end
   end
 
+  describe '#delete' do
+    let(:path) { 'some_path' }
+    let(:response) { { some: 'response' }.to_json }
+
+    before do
+      stub_request(:delete, "#{url}/#{path}")
+        .to_return(status: 200, body: response.to_json)
+    end
+
+    it 'calls the API with a delete' do
+      expect(client.delete(path)).to eq(response)
+    end
+  end
+
   describe '.fetch_hrid' do
     let(:barcode) { '123456' }
 
