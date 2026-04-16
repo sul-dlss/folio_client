@@ -22,6 +22,8 @@ RSpec/MultipleExpectations:
   Max: 3
 RSpec/ExampleLength:
   Max: 15
+RSpec/NestedGroups:
+  Enabled: false
 
 RSpec/BeEq: # new in 2.9.0
   Enabled: true

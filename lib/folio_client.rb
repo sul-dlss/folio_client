@@ -103,6 +103,7 @@ class FolioClient # rubocop:disable Metrics/ClassLength
   # @param path [String] API path relative to configured +url+
   # @param params [Hash] query parameters
   # @return [Hash, Array, nil] parsed JSON body, or +nil+ for empty body
+  # @yield [Faraday::Response] optional block to receive the raw +Faraday::Response+ object
   # @raise [FolioClient::Error] when Folio responds with an unexpected status
   def get(path, params = {})
     response = with_token_refresh_when_unauthorized do
@@ -110,6 +111,8 @@ class FolioClient # rubocop:disable Metrics/ClassLength
     end
 
     UnexpectedResponse.call(response) unless response.success?
+
+    yield response if block_given?
 
     JSON.parse(response.body) if response.body.present?
   end
@@ -121,6 +124,7 @@ class FolioClient # rubocop:disable Metrics/ClassLength
   # @param body [Hash, String, nil] request payload
   # @param content_type [String] MIME type of request body
   # @return [Hash, Array, nil] parsed JSON body, or +nil+ for empty body
+  # @yield [Faraday::Response] optional block to receive the raw +Faraday::Response+ object
   # @raise [FolioClient::Error] when Folio responds with an unexpected status
   def post(path, body = nil, content_type: 'application/json')
     req_body = content_type == 'application/json' ? body&.to_json : body
@@ -129,6 +133,8 @@ class FolioClient # rubocop:disable Metrics/ClassLength
     end
 
     UnexpectedResponse.call(response) unless response.success?
+
+    yield response if block_given?
 
     JSON.parse(response.body) if response.body.present?
   end
@@ -141,6 +147,7 @@ class FolioClient # rubocop:disable Metrics/ClassLength
   # @param content_type [String] MIME type of request body
   # @param exception_args [Hash] supplemental context forwarded to +UnexpectedResponse+
   # @return [Hash, Array, nil] parsed JSON body, or +nil+ for empty body
+  # @yield [Faraday::Response] optional block to receive the raw +Faraday::Response+ object
   # @raise [FolioClient::Error] when Folio responds with an unexpected status
   def put(path, body = nil, content_type: 'application/json', **exception_args)
     req_body = content_type == 'application/json' ? body&.to_json : body
@@ -149,6 +156,27 @@ class FolioClient # rubocop:disable Metrics/ClassLength
     end
 
     UnexpectedResponse.call(response, **exception_args) unless response.success?
+
+    yield response if block_given?
+
+    JSON.parse(response.body) if response.body.present?
+  end
+
+  # Send an authenticated DELETE request
+  # @note None of the current FolioClient services use this method, but it's provided
+  #   primarily to accommodate work in folio-tasks
+  # @param path [String] API path relative to configured +url+
+  # @return [Hash, Array, nil] parsed JSON body, or +nil+ for empty body
+  # @yield [Faraday::Response] optional block to receive the raw +Faraday::Response+ object
+  # @raise [FolioClient::Error] when Folio responds with an unexpected status
+  def delete(path)
+    response = with_token_refresh_when_unauthorized do
+      connection.delete(path)
+    end
+
+    UnexpectedResponse.call(response) unless response.success?
+
+    yield response if block_given?
 
     JSON.parse(response.body) if response.body.present?
   end

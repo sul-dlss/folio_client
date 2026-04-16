@@ -72,7 +72,7 @@ RSpec.describe FolioClient do
 
   describe '#get' do
     let(:path) { 'some_path' }
-    let(:response) { { some: 'response' }.to_json }
+    let(:response) { { 'some' => 'response' } }
 
     before do
       stub_request(:get, "#{url}/#{path}?id=5")
@@ -82,11 +82,20 @@ RSpec.describe FolioClient do
     it 'calls the API with a get' do
       expect(client.get(path, { id: 5 })).to eq(response)
     end
+
+    context 'when block is passed' do
+      it 'calls the API with a get and yields the response' do
+        client.get(path, { id: 5 }) do |resp|
+          expect(resp).to be_a(Faraday::Response)
+          expect(resp.body).to eq(response.to_json)
+        end
+      end
+    end
   end
 
   describe '#post' do
     let(:path) { 'some_path' }
-    let(:response) { { some: 'response' }.to_json }
+    let(:response) { { 'some' => 'response' } }
 
     context 'with a JSON body' do
       before do
@@ -103,6 +112,15 @@ RSpec.describe FolioClient do
 
       it 'calls the API with a post' do
         expect(client.post(path, { id: 5 })).to eq(response)
+      end
+
+      context 'when block is passed' do
+        it 'calls the API with a post and yields the response' do
+          client.post(path, { id: 5 }) do |resp|
+            expect(resp).to be_a(Faraday::Response)
+            expect(resp.body).to eq(response.to_json)
+          end
+        end
       end
     end
 
@@ -144,7 +162,7 @@ RSpec.describe FolioClient do
 
   describe '#put' do
     let(:path) { 'some_path' }
-    let(:response) { { some: 'response' }.to_json }
+    let(:response) { { 'some' => 'response' } }
 
     context 'with a JSON body' do
       before do
@@ -161,6 +179,15 @@ RSpec.describe FolioClient do
 
       it 'calls the API with a put' do
         expect(client.put(path, { id: 5 })).to eq(response)
+      end
+
+      context 'when block is passed' do
+        it 'calls the API with a put and yields the response' do
+          client.put(path, { id: 5 }) do |resp|
+            expect(resp).to be_a(Faraday::Response)
+            expect(resp.body).to eq(response.to_json)
+          end
+        end
       end
     end
 
@@ -196,6 +223,29 @@ RSpec.describe FolioClient do
 
       it 'calls the API with a put' do
         expect(client.put(path, 'foobar', content_type: 'text/plain')).to eq(response)
+      end
+    end
+  end
+
+  describe '#delete' do
+    let(:path) { 'some_path' }
+    let(:response) { { 'some' => 'response' } }
+
+    before do
+      stub_request(:delete, "#{url}/#{path}")
+        .to_return(status: 200, body: response.to_json)
+    end
+
+    it 'calls the API with a delete' do
+      expect(client.delete(path)).to eq(response)
+    end
+
+    context 'when block is passed' do
+      it 'calls the API with a delete and yields the response' do
+        client.delete(path) do |resp|
+          expect(resp).to be_a(Faraday::Response)
+          expect(resp.body).to eq(response.to_json)
+        end
       end
     end
   end
