@@ -127,4 +127,9 @@ RSpec.describe FolioClient::RecordsEditor do
     )
   end
   # rubocop:enable RSpec/ExampleLength
+
+  it 'does not PUT when the record JSON is unchanged' do
+    records_editor.edit_marc_json(hrid: hrid) { |editable_response_json| editable_response_json }
+    expect(client).not_to have_received(:put)
+  end
 end

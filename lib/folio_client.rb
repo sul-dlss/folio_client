@@ -3,6 +3,7 @@
 require 'http/cookie' # Workaround for https://github.com/sparklemotion/http-cookie/issues/62
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/object/blank'
+require 'active_support/core_ext/object/deep_dup'
 require 'deprecation'
 require 'faraday'
 require 'faraday-cookie_jar'
