@@ -30,9 +30,11 @@ class FolioClient
       record_json['relatedRecordVersion'] = version
       record_json['_actionType'] = 'edit'
 
+      original_record_json = record_json.deep_dup
+
       yield record_json
 
-      client.put("/records-editor/records/#{parsed_record_id}", record_json)
+      client.put("/records-editor/records/#{parsed_record_id}", record_json) unless record_json == original_record_json
     end
 
     private
